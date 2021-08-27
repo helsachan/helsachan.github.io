@@ -28,11 +28,19 @@ github_username:  helsachan
 github: [metadata]
 
 # Build settings
+locale: "en-US"
 remote_theme: "mmistakes/minimal-mistakes@4.24.0"
+minimal_mistakes_skin: "dirt"
 plugins:
   - jekyll-feed
   - jekyll-remote-theme
   - jekyll-include-cache
+repository: helsachan/helsachan.github.io
+comments:
+  provider: "utterances"
+  utterances:
+    theme: "github-light" # "github-dark"
+    issue_term: "pathname"
 
 # Exclude from processing.
 # The following items will not be processed, by default.
