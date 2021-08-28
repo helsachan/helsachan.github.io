@@ -26,6 +26,7 @@ url: "" # the base hostname & protocol for your site, e.g. http://example.com
 linkedin_username: helsachan
 github_username:  helsachan
 github: [metadata]
+logo: "/assets/favicon.svg"
 
 # Build settings
 locale: "en-US"
@@ -36,6 +37,17 @@ plugins:
   - jekyll-remote-theme
   - jekyll-include-cache
 repository: helsachan/helsachan.github.io
+include: ["_pages"]
+
+# Customization
+defaults:
+  # _posts
+  - scope:
+      path: ""
+      type: posts
+    values:
+      read_time: true
+      comments: false
 comments:
   provider: "utterances"
   utterances:
