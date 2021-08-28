@@ -26,7 +26,7 @@ url: "" # the base hostname & protocol for your site, e.g. http://example.com
 linkedin_username: helsachan
 github_username:  helsachan
 github: [metadata]
-logo: "/assets/favicon.svg"
+logo: "/apple-touch-icon.png"
 
 # Build settings
 locale: "en-US"
