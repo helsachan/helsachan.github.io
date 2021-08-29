@@ -1,7 +1,5 @@
 ---
-layout: posts
-
-title:  "It's a test post!"
+title:  "Let me test this!"
 date:   2021-08-24 22:36:35 +0800
 categories: test posting
 ---

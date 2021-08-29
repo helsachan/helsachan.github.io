@@ -37,22 +37,34 @@ plugins:
   - jekyll-remote-theme
   - jekyll-include-cache
 repository: helsachan/helsachan.github.io
-include: ["_pages"]
+include: ["_pages", "_category"]
 
 # Customization
 defaults:
-  # _posts
   - scope:
       path: ""
       type: posts
     values:
       read_time: true
-      comments: false
+      show_date: true
+      layout: posts
+      
+breadcrumbs: true
 comments:
   provider: "utterances"
   utterances:
     theme: "github-light" # "github-dark"
     issue_term: "pathname"
+masthead_title: "Helsa Chan -- I make cakes..."
+permalink: "/:categories/:title/"
+
+jekyll-archives:
+  enabled: all
+  layouts: 
+    category: category
+  permalinks:
+    category: '/:name/'
+
 
 # Exclude from processing.
 # The following items will not be processed, by default.

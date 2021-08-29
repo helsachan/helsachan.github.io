@@ -4,11 +4,13 @@ layout: archive
 
 {{ content }}
 
+<!-- comments 
 <script src="https://utteranc.es/client.js" repo="helsachan/helsachan.github.io" issue-term="pathname"
   theme="github-light" crossorigin="anonymous" async>
   </script>
+-->
 
-<!-- 
+<!-- posts of the same year
 <ul class="taxonomy__index">
   {% assign postsInYear = site.posts | where_exp: "item", "item.hidden != true" | group_by_exp: 'post', 'post.date |
   date: "%Y"' %}
@@ -22,9 +24,10 @@ layout: archive
 </ul>
 -->
 
+<hr>
 {% assign entries_layout = page.entries_layout | default: 'list' %}
 {% assign postsByYear = site.posts | where_exp: "item", "item.hidden != true" | group_by_exp: 'post', 'post.date | date:
-"%Y"' %}
+"... More from %Y"' %}
 {% for year in postsByYear %}
 <section id="{{ year.name }}" class="taxonomy__section">
   <h2 class="archive__subtitle">{{ year.name }}</h2>
