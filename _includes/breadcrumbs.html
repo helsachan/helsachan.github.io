@@ -16,7 +16,7 @@
   <ol itemscope itemtype="https://schema.org/BreadcrumbList">
     {% assign crumbs = page.url | split: '/' %}
     {% assign i = 1 %}
-    {% assign route = site.url %}
+    {% assign route = site.url | append: site.baseurl %}
     {% for crumb in crumbs offset: 1 %}
     {% if forloop.first %}
     <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
