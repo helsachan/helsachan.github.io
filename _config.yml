@@ -2,7 +2,7 @@ title: Helsa Chan
 description: >- # this means to ignore newlines until "baseurl:"
   Welcome to my page! Thanks for visiting!
 baseurl: "" # the subpath of your site, e.g. /blog
-url: "" # the base hostname & protocol for your site, e.g. http://example.com
+url: "https://helsachan.github.io" # the base hostname & protocol for your site, e.g. http://example.com
 linkedin_username: helsachan
 github_username:  helsachan
 github: [metadata]
