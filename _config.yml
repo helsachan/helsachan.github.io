@@ -40,10 +40,22 @@ repository: helsachan/helsachan.github.io
 include: ["_pages", "_category"]
 
 # Customization
+collections:
+  portfolio:
+    output: true
+    permalink: /:collection/:path/
+
 defaults:
   - scope:
       path: ""
       type: posts
+    values:
+      read_time: true
+      show_date: true
+      layout: posts
+  - scope:
+      path: ""
+      type: portfolio
     values:
       read_time: true
       show_date: true
@@ -57,6 +69,8 @@ comments:
     issue_term: "pathname"
 masthead_title: "Helsa Chan -- I make cakes..."
 permalink: "/:categories/:title/"
+search: true
+
 
 jekyll-archives:
   enabled: all
