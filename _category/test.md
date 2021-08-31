@@ -1,8 +1,7 @@
 ---
 title: Test 
-layout: collection
+layout: category
 permalink: /test/
-collection: posts
 entries_layout: grid
 classes: wide
 ---

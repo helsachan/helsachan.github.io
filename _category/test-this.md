@@ -1,6 +1,6 @@
 ---
 title: Test this
-layout: collection
+layout: category
 permalink: /test/this/
 collection: posts
 entries_layout: list

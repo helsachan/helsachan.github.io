@@ -19,25 +19,12 @@ plugins:
 repository: helsachan/helsachan.github.io
 include: ["_pages", "_category"]
 
-# Customization
-collections:
-  portfolio:
-    output: true
-    permalink: /:collection/:path/
-
 defaults:
   - scope:
       path: ""
       type: posts
     values:
       read_time: true
-      show_date: true
-      layout: posts
-  - scope:
-      path: ""
-      type: portfolio
-    values:
-      read_time: false
       show_date: true
       layout: posts
       

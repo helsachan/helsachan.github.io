@@ -1,8 +1,8 @@
 ---
 title: Portfolio
-layout: collection
+layout: category
 permalink: /portfolio/
-collection: portfolio
 entries_layout: grid
 classes: wide
 ---
+portfolio

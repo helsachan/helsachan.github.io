@@ -4,7 +4,27 @@ layout: archive
 
 {{ content }}
 
+{% assign categories_max = 0 %}
+{% for category in site.categories %}
+{% if category[1].size > categories_max %}
+{% assign categories_max = category[1].size %}
+{% endif %}
+{% endfor %}
+
 {% assign entries_layout = page.entries_layout | default: 'list' %}
+{% assign categories_list = page.name | split: "." | first | split: "-" %}
+
 <div class="entries-{{ entries_layout }}">
-  {% include posts-category.html taxonomy=page.taxonomy type=entries_layout %}
+  {% for post in site.posts %}
+  {% assign show_post = true %}
+  {% for category in categories_list %}
+  {% if post.categories contains category %}
+  {% else %}
+  {% assign show_post = false %}
+  {% endif %}
+  {% endfor %}
+  {% if show_post %}
+  {% include archive-single.html type=entries_layout %}
+  {% endif %}
+  {% endfor %}
 </div>
