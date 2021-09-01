@@ -1,7 +1,9 @@
 main:
   - title: "About"
     url: /about
-  - title: "Categories"
-    url: /categories
-  - title: "Portfolio"
-    url: /portfolio
+  - title: "ML"
+    url: /machine-learning
+  - title: "Art"
+    url: /art
+  - title: "Books"
+    url: /books
