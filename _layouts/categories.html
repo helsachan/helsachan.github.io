@@ -4,11 +4,13 @@ layout: archive
 
 {{ content }}
 
+{% assign sorted_cats = site.categories | sort %}
 <ul class="taxonomy__index">
-  {% for category in site.categories %}
+  {% for category in sorted_cats %}
   <li>
-    <a href="/{{ category[0] }}">
-      {{ category.first | capitalize }}
+    <a href="/{{ category[0] }}"><img src="/assets/images/categories/{{ category[0] }}.png" , height=24, width=24>
+      {{ category[0] }}
+    </a>
     </a>
   </li>
   {% endfor %}
