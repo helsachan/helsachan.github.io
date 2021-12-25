@@ -2,8 +2,7 @@
 title: Machine Learning
 layout: category
 permalink: /machine-learning/
-entries_layout: grid
-classes: wide
+entries_layout: list
 ---
 
-I'm a Data Scientist / Machine Learning Engineer. 
+There are many occasions when I get asked what machine learning and data science is all about. My short answer? "Learning from mistakes."
