@@ -4,13 +4,15 @@ layout: archive
 
 {{ content }}
 
-{% for category in site.categories %}
-<li>
-  <a href="/{{ category[0] }}">
-    <strong>{{ category[0] }}</strong>
-  </a>
-</li>
-{% endfor %}
+<ul class="taxonomy__index">
+  {% for category in site.categories %}
+  <li>
+    <a href="/{{ category[0] }}">
+      {{ category.first | capitalize }}
+    </a>
+  </li>
+  {% endfor %}
+</ul>
 
 <!-- 
 {% assign categories_max = 0 %}
