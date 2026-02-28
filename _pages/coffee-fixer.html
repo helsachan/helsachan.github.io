@@ -4,21 +4,46 @@ layout: default
 ---
 
 <div id="espresso-app-wrapper">
-  <div class="lab-header">
-    <h3 style="border:none; margin-bottom: 5px;">Espresso Precision Counselor</h3>
-    <p style="opacity: 0.7; font-style: italic; font-size: 0.75rem;">Flavor & Texture Balancing Engine</p>
+  <div style="text-align:center; margin-bottom:20px;">
+    <h2 style="margin:0; border:none;">Espresso Precision Counselor</h2>
+    <div class="instructions-box">
+      <strong>How to use: </strong>Set your current dose, yield, and time. Adjust the <strong>Sensory</strong> sliders
+      to match what you tasted. Click <strong>Log & Calibrate</strong> to see specific adjustment targets for your
+      next
+      shot.
+
+    </div>
+
+    <button class="help-toggle-btn" onclick="toggleHelp()">? View Taste Scale Guide</button>
+    <br>
+    <br>
+
+    <div style="size:7pt"><strong>Heads up: </strong> This tool is a guide, not a law. Since every machine and bean is
+      different, use these
+      suggestions
+      as a
+      starting point, not gospel. Brew at your own risk, watch out for hot water, and don't blame me if you "choke"
+      your
+      grinder. Happy dialing!</div>
+  </div>
+
+  <div id="taste-guide" class="help-content" style="display:none;">
+    <h4 style="margin:0; border:none;">The 1–9 Taste Scale Guide</h4>
+    <div class="guide-grid">
+      <div><strong>1–3 (Under):</strong> Salty, sour, thin, sharpness.</div>
+      <div><strong>4–5 (Balanced):</strong> 5 is the Sweet Spot. 4 is bright/fruity.</div>
+      <div><strong>6–9 (Over):</strong> 6 is dry. 7+ is bitter, ashy, and burnt.</div>
+    </div>
   </div>
 
   <div class="lab-grid">
     <div class="lab-panel">
       <span class="panel-h">Physical Recipe</span>
-
       <div class="roast-toggle">
         <button class="roast-btn" onclick="setRoast('light', this)">Light</button>
         <button class="roast-btn active" onclick="setRoast('medium', this)">Medium</button>
         <button class="roast-btn" onclick="setRoast('dark', this)">Dark</button>
       </div>
-
 
       <div class="control-row">
         <div class="label-wrap"><label>Dose</label><span><input type="number" step="0.2" class="val-input" id="n-dose"
@@ -42,7 +67,7 @@ layout: default
         <div class="label-wrap"><label>Shot Time</label><span><input type="number" class="val-input" id="n-time"
               value="28"> s</span></div>
         <div class="slider-container">
-          <input type="range" id="v-time" min="10" max="60" value="28">
+          <input type="range" id="v-time" min="10" max="60" step="1" value="28">
           <div class="marker" id="m-time"></div>
         </div>
       </div>
@@ -51,7 +76,7 @@ layout: default
         <div class="label-wrap"><label>Water Temp</label><span><input type="number" class="val-input" id="n-temp"
               value="93"> °C</span></div>
         <div class="slider-container">
-          <input type="range" id="v-temp" min="85" max="98" value="93">
+          <input type="range" id="v-temp" min="85" max="98" step="1" value="93">
           <div class="marker" id="m-temp"></div>
         </div>
       </div>
@@ -64,7 +89,7 @@ layout: default
             value="5"></div>
         <div class="range-labels"><span>Sour</span><span>Balanced</span><span>Bitter</span></div>
         <div class="slider-container">
-          <input type="range" id="v-taste" min="1" max="9" value="5">
+          <input type="range" id="v-taste" min="1" max="9" step="1" value="5">
           <div class="marker" id="m-taste"></div>
         </div>
       </div>
@@ -74,26 +99,28 @@ layout: default
             value="5"></div>
         <div class="range-labels"><span>Watery</span><span>Creamy</span><span>Syrupy</span></div>
         <div class="slider-container">
-          <input type="range" id="v-body" min="1" max="9" value="5">
+          <input type="range" id="v-body" min="1" max="9" step="1" value="5">
           <div class="marker" id="m-body"></div>
         </div>
       </div>
 
-      <button class="main-action-btn" id="cal-btn" onclick="calibrate()">LOG SHOT & CALIBRATE</button>
+      <div style="margin-top: 40px;">
+        <button class="main-action-btn" id="cal-btn" onclick="calibrate()">LOG SHOT & CALIBRATE</button>
+      </div>
     </div>
   </div>
 
-  <div class="diag-box">
-    <div id="diag-msg" style="font-weight: bold; font-size: 1rem;">Awaiting Baseline...</div>
+  <div class="diag-box" id="diagnosis-container">
+    <div id="diag-msg" style="font-weight: bold; font-size: 1.1rem;">Awaiting Baseline...</div>
     <div class="target-card">
-      <h4 style="border:none; margin:0 0 8px 0; color:var(--goldcol); font-size:0.7rem; text-transform:uppercase;">
+      <h4 style="border:none; margin:0 0 8px 0; color:var(--goldcol); font-size:0.75rem; text-transform:uppercase;">
         Correction Plan</h4>
-      <div id="target-text" style="font-size: 0.8rem;">Adjust sliders and calibrate to see targets.</div>
+      <div id="target-text" style="font-size: 0.85rem;">Input shot metrics and calibrate to see targets.</div>
     </div>
     <div class="stats-strip">
       <span>RATIO: <span class="stat-val" id="stat-ratio">1:2.0</span></span>
       <span>FLOW: <span class="stat-val" id="stat-flow">--</span></span>
-      <span>EY: <span class="stat-val" id="stat-ey">--</span></span>
+      <span>EST. EY: <span class="stat-val" id="stat-ey">--</span></span>
     </div>
   </div>
 
@@ -101,12 +128,13 @@ layout: default
     <table class="history-table" id="shot-history">
       <thead>
         <tr>
-          <th>#</th>
+          <th style="width:200px;">Date / Time</th>
           <th>Roast</th>
           <th>Recipe</th>
           <th>Time</th>
-          <th>Temp</th>
+          <th>EY%</th>
           <th>Taste</th>
+          <th style="width:30px;"></th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -123,17 +151,18 @@ layout: default
     --coffeecol: #2c1e1a;
     --accentcol: #a67c52;
     --goldcol: #d4a373;
+    --danger: #ff4d4d;
     width: 100%;
     max-width: 60%;
     margin: 2rem auto;
     font-size: 0.85rem;
-    line-height: 1.4;
+    line-height: 1.5;
   }
 
-  @media screen and (max-width: 1024px) {
+  @media (max-width: 1024px) {
     #espresso-app-wrapper {
       max-width: 100%;
-      padding: 10px;
+      padding: 0 15px;
     }
   }
 
@@ -141,66 +170,74 @@ layout: default
     box-sizing: border-box;
   }
 
-  #espresso-app-wrapper .lab-header {
-    text-align: center;
-    margin-bottom: 20px;
+  #espresso-app-wrapper .instructions-box {
+    background: #fdf6ed;
+    border: 1px solid #faead1;
+    padding: 12px;
+    border-radius: 8px;
+    margin: 15px 0;
+    font-size: 0.8rem;
+    color: #5d4037;
   }
 
-  #espresso-app-wrapper h3 {
-    margin: 0;
-    font-size: 1.3rem;
-    border: none;
+  #espresso-app-wrapper .help-toggle-btn {
+    background: none;
+    border: 1px solid var(--accentcol);
+    color: var(--accentcol);
+    padding: 4px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.75rem;
+  }
+
+  #espresso-app-wrapper .help-content {
+    background: white;
+    border: 1px solid #eee;
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    text-align: left;
+  }
+
+  #espresso-app-wrapper .guide-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    font-size: 0.75rem;
+    margin-top: 10px;
   }
 
   #espresso-app-wrapper .lab-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 15px;
-    margin-bottom: 20px;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    margin-bottom: 30px;
+  }
+
+  @media (max-width: 850px) {
+    #espresso-app-wrapper .lab-grid {
+      grid-template-columns: 1fr;
+    }
   }
 
   #espresso-app-wrapper .lab-panel {
     border: 1px solid #eee;
-    padding: 15px;
-    border-radius: 8px;
+    padding: 20px;
+    border-radius: 12px;
     background: rgba(0, 0, 0, 0.02);
   }
 
   #espresso-app-wrapper .panel-h {
     font-weight: 800;
-    font-size: 0.6rem;
-    text-transform: uppercase;
-    color: #999;
-    display: block;
-    margin-bottom: 12px;
-    letter-spacing: 0.5px;
-  }
-
-  #espresso-app-wrapper .roast-toggle {
-    display: flex;
-    gap: 4px;
-    margin-bottom: 15px;
-  }
-
-  #espresso-app-wrapper .roast-btn {
-    flex: 1;
-    padding: 6px;
-    border: 1px solid #ddd;
-    background: white;
-    cursor: pointer;
-    border-radius: 4px;
-    font-weight: bold;
     font-size: 0.7rem;
-  }
-
-  #espresso-app-wrapper .roast-btn.active {
-    background: var(--coffeecol);
-    color: white;
-    border-color: var(--coffeecol);
+    text-transform: uppercase;
+    color: #bbb;
+    display: block;
+    margin-bottom: 15px;
   }
 
   #espresso-app-wrapper .control-row {
-    margin-bottom: 15px;
+    margin-bottom: 20px;
     position: relative;
   }
 
@@ -219,84 +256,105 @@ layout: default
 
   #espresso-app-wrapper .val-input {
     width: 75px;
-    padding: 6px 4px;
+    padding: 5px;
     border: 2px solid #ddd;
     border-radius: 6px;
     text-align: center;
     font-weight: 800;
     font-size: 1rem;
     color: var(--accentcol);
-    background-color: #fff;
-    transition: border-color 0.2s;
-    outline: none;
+    background: white;
   }
 
-  #espresso-app-wrapper .val-input:focus {
-    border-color: var(--accentcol);
+  #espresso-app-wrapper .slider-container {
+    position: relative;
+    width: 100%;
+    height: 30px;
+    display: flex;
+    align-items: center;
+  }
+
+  #espresso-app-wrapper input[type=range] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    background: #e0e0e0;
+    border-radius: 2px;
+    outline: none;
+    margin: 0;
+    padding: 0;
+    z-index: 2;
+    position: relative;
+    cursor: pointer;
+  }
+
+  #espresso-app-wrapper input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    background: var(--coffeecol);
+    cursor: pointer;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   }
 
   #espresso-app-wrapper .marker {
     position: absolute;
-    width: 3px;
+    width: 24px;
+    height: 24px;
     background: var(--goldcol);
-    width: 3px;
-    height: 18px;
-    /* Slightly taller than the track */
-
-    /* Center it vertically over the slider track */
     top: 50%;
     transform: translate(-50%, -50%);
-
     z-index: 1;
-    /* Sits behind the slider thumb, but over the track */
-    border-radius: 2px;
+    border-radius: 50%;
     display: none;
     pointer-events: none;
-    /* Prevents the marker from blocking clicks on the slider */
-  }
-
-  #espresso-app-wrapper input[type=range] {
-    width: 100%;
-    accent-color: var(--coffeecol);
-    margin: 6px 0;
-    height: 4px;
-    position: relative;
-    z-index: 2;
-    /* Thumb sits above marker */
-    background: transparent;
-    /* Allows marker to show through the track if desired */
-  }
-
-
-  /* Ensure the range container is the anchor */
-  #espresso-app-wrapper .slider-container {
-    position: relative;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    /* Centers the input vertically */
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+    filter: blur(2px);
   }
 
   #espresso-app-wrapper .diag-box {
     background: var(--coffeecol);
     color: white;
-    padding: 18px;
-    border-radius: 8px;
-    border-left: 5px solid var(--goldcol);
-    margin-bottom: 25px;
+    padding: 20px;
+    border-radius: 12px;
+    border-left: 8px solid var(--goldcol);
+    transition: 0.3s;
+  }
+
+  #espresso-app-wrapper .diag-box.ey-warning {
+    border-left-color: var(--danger);
+    outline: 2px solid var(--danger);
+    animation: pulse-red 2s infinite;
+  }
+
+  @keyframes pulse-red {
+    0% {
+      box-shadow: 0 0 0 0 rgba(255, 77, 77, 0.4);
+    }
+
+    70% {
+      box-shadow: 0 0 0 10px rgba(255, 77, 77, 0);
+    }
+
+    100% {
+      box-shadow: 0 0 0 0 rgba(255, 77, 77, 0);
+    }
   }
 
   #espresso-app-wrapper .target-card {
     background: rgba(255, 255, 255, 0.08);
     padding: 12px;
-    border-radius: 6px;
-    margin-top: 12px;
+    border-radius: 8px;
+    margin-top: 15px;
   }
 
   #espresso-app-wrapper .stats-strip {
     display: flex;
     justify-content: space-between;
-    margin-top: 12px;
+    margin-top: 15px;
     font-family: monospace;
     font-size: 0.7rem;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -305,11 +363,12 @@ layout: default
 
   #espresso-app-wrapper .stat-val {
     color: var(--goldcol);
+    font-weight: bold;
   }
 
   #espresso-app-wrapper .table-scroll {
     overflow-x: auto;
-    margin-top: 15px;
+    margin-top: 25px;
   }
 
   #espresso-app-wrapper .history-table {
@@ -321,12 +380,13 @@ layout: default
   #espresso-app-wrapper .history-table th {
     border-bottom: 2px solid #eee;
     text-align: left;
-    padding: 6px;
+    padding: 8px;
     color: #888;
+    white-space: nowrap;
   }
 
   #espresso-app-wrapper .history-table td {
-    padding: 6px;
+    padding: 8px;
     border-bottom: 1px solid #f9f9f9;
   }
 
@@ -334,22 +394,36 @@ layout: default
     background: var(--accentcol);
     color: white;
     border: none;
-    padding: 10px;
+    padding: 12px;
     width: 100%;
-    border-radius: 6px;
+    border-radius: 8px;
     font-weight: bold;
     cursor: pointer;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
   }
 
   #espresso-app-wrapper .btn-reset {
     background: none;
     border: 1px solid #ddd;
     color: #999;
-    padding: 4px 8px;
+    padding: 5px 10px;
     border-radius: 4px;
     cursor: pointer;
     font-size: 0.65rem;
+  }
+
+  #espresso-app-wrapper .btn-delete-row {
+    background: none;
+    border: none;
+    color: #ccc;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1.1rem;
+    padding: 0 5px;
+  }
+
+  #espresso-app-wrapper .btn-delete-row:hover {
+    color: var(--danger);
   }
 
   #espresso-app-wrapper .range-labels {
@@ -359,17 +433,45 @@ layout: default
     color: #999;
   }
 
+  #espresso-app-wrapper .roast-toggle {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 20px;
+  }
+
+  #espresso-app-wrapper .roast-btn {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ddd;
+    background: white;
+    cursor: pointer;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 0.75rem;
+  }
+
+  #espresso-app-wrapper .roast-btn.active {
+    background: var(--coffeecol);
+    color: white;
+  }
+
   #espresso-app-wrapper .footer-actions {
     text-align: right;
-    margin-top: 15px;
+    margin-top: 20px;
   }
 </style>
 
 <script>
   {% raw %}
-  let isCalibrated = false; let roast = 'medium'; let shotCount = 0;
-  let base = { dose: 18, yield: 36, time: 28, temp: 93, taste: 5, body: 5 };
+  let isCalibrated = false; let roast = 'medium';
+  let base = { dose: 18, yield: 36, time: 28, temp: 93, taste: 5, body: 5, ey: 20 };
   const ids = ['dose', 'yield', 'time', 'temp', 'taste', 'body'];
+  const THUMB_WIDTH = 18; // Must match CSS
+
+  function toggleHelp() {
+    const guide = document.getElementById('taste-guide');
+    guide.style.display = guide.style.display === 'none' ? 'block' : 'none';
+  }
 
   function setRoast(type, btn) {
     roast = type; document.querySelectorAll('.roast-btn').forEach(b => b.classList.remove('active'));
@@ -382,73 +484,105 @@ layout: default
     updateLogic(); saveToStorage();
   }
 
+  // New Helper to calculate precise left position with thumb offset
+  function getMarkerLeft(percent) {
+    // Formula: left = (percent * (trackWidth - thumbWidth) / 100) + (thumbWidth / 2)
+    // We use CSS calc to make it reactive to container resizing
+    return `calc((${percent} * (100% - ${THUMB_WIDTH}px) / 100) + (${THUMB_WIDTH / 2}px))`;
+  }
+
   function calibrate() {
-    isCalibrated = true; shotCount++;
+    isCalibrated = true;
+    const currentEY = calculateEY();
+    const now = new Date();
+    const timestamp = now.toLocaleDateString([], { day: '2-digit', month: '2-digit', year: 'numeric' }) + ", " +
+      now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+
     ids.forEach(id => {
-      base[id] = parseFloat(document.getElementById('v-' + id).value);
-      const marker = document.getElementById('m-' + id); const slider = document.getElementById('v-' + id);
+      const slider = document.getElementById('v-' + id);
+      base[id] = parseFloat(slider.value);
+      const marker = document.getElementById('m-' + id);
       const percent = (base[id] - slider.min) / (slider.max - slider.min) * 100;
-      marker.style.left = percent + "%"; marker.style.display = "block";
+
+      marker.style.left = getMarkerLeft(percent);
+      marker.style.display = "block";
     });
+
+    base.ey = currentEY;
+    addHistoryRow(timestamp, roast, base.dose, base.yield, base.time, currentEY, base.taste);
+    document.getElementById('cal-btn').innerText = "UPDATE SHOT & RE-CALIBRATE";
+    updateLogic(); saveToStorage();
+  }
+
+  function addHistoryRow(timeStr, rst, dose, yield, time, ey, taste) {
     const tbody = document.querySelector('#shot-history tbody');
     const row = tbody.insertRow(0);
-    row.innerHTML = `<td>${shotCount}</td><td>${roast}</td><td>${base.dose}/${base.yield}</td><td>${base.time}s</td><td>${base.temp}°</td><td>${base.taste}/9</td>`;
-    document.getElementById('cal-btn').innerText = "UPDATE & RE-CALIBRATE";
-    updateLogic(); saveToStorage();
+    row.innerHTML = `<td style="white-space:nowrap">${timeStr}</td><td>${rst}</td><td>${dose}/${yield}</td><td>${time}s</td><td>${ey}%</td><td>${taste}/9</td><td><button class="btn-delete-row" onclick="removeRow(this)">×</button></td>`;
+  }
+
+  function removeRow(btn) {
+    let row = btn.parentNode.parentNode;
+    row.parentNode.removeChild(row);
+    saveToStorage();
+  }
+
+  function calculateEY() {
+    const d = parseFloat(document.getElementById('v-dose').value), y = parseFloat(document.getElementById('v-yield').value), t = parseFloat(document.getElementById('v-time').value), temp = parseFloat(document.getElementById('v-temp').value);
+    const r = y / d;
+    let ey = 18 + (r - 2) * 2.5 + (t - 28) * 0.15 + (temp - 93) * 0.2;
+    if (roast === 'light') ey -= 1.5; if (roast === 'dark') ey += 1.5;
+    return parseFloat(ey.toFixed(1));
   }
 
   function updateLogic() {
     const d = parseFloat(document.getElementById('v-dose').value), y = parseFloat(document.getElementById('v-yield').value), t = parseFloat(document.getElementById('v-time').value), temp = parseFloat(document.getElementById('v-temp').value), taste = parseInt(document.getElementById('v-taste').value), body = parseInt(document.getElementById('v-body').value);
-    const ratio = (y / d).toFixed(2), flow = (y / t).toFixed(2);
+    const currentEY = calculateEY(), ratio = (y / d).toFixed(2), flow = (y / t).toFixed(2);
     document.getElementById('stat-ratio').innerText = `1:${ratio}`;
     document.getElementById('stat-flow').innerText = `${flow} g/s`;
+    const eyEl = document.getElementById('stat-ey'); eyEl.innerText = `${currentEY}%`;
+    const diagBox = document.getElementById('diagnosis-container');
+    if (currentEY > 22.5) { eyEl.className = 'stat-val ey-bad'; diagBox.classList.add('ey-warning'); }
+    else { eyEl.className = 'stat-val'; diagBox.classList.remove('ey-warning'); }
 
     let msg = "", advice = "";
     if (isCalibrated) {
-      // FLAVOR LOGIC
       let tRatio;
-      if (taste < 5) { // Sour
-        tRatio = (roast === 'light' ? 2.5 : (roast === 'medium' ? 2.2 : 2.0));
-        msg = "🍋 Analysis: UNDER-EXTRACTED (Sour)";
-      } else if (taste > 5) { // Bitter
-        tRatio = (roast === 'light' ? 2.0 : (roast === 'medium' ? 1.8 : 1.5));
-        msg = "🔥 Analysis: OVER-EXTRACTED (Bitter)";
-      } else { msg = "✨ Analysis: BALANCED FLAVOR"; }
+      if (taste < 5) { tRatio = (roast === 'light' ? 2.5 : (roast === 'medium' ? 2.2 : 2.0)); msg = "🍋 Analysis: UNDER-EXTRACTED (Sour)"; }
+      else if (taste > 5) { tRatio = (roast === 'light' ? 2.0 : (roast === 'medium' ? 1.8 : 1.5)); msg = currentEY > 22.5 ? "💀 Analysis: SEVERE OVER-EXTRACTION" : "🔥 Analysis: OVER-EXTRACTED (Bitter)"; }
+      else { msg = "✨ Analysis: BALANCED FLAVOR"; }
 
-      // TEXTURE LOGIC (NEW)
       let textureAdvice = "";
-      if (body < 4) { // Watery
-        textureAdvice = `<br><b>Mouthfeel Fix:</b> Increase Dose to <b>${(d + 0.5).toFixed(1)}g</b> or tighten Ratio to increase strength.`;
-      } else if (body > 6) { // Syrupy/Muddy
-        textureAdvice = `<br><b>Mouthfeel Fix:</b> Decrease Dose to <b>${(d - 0.5).toFixed(1)}g</b> or slightly increase Yield to dilute intensity.`;
-      }
+      if (body < 4) textureAdvice = `<br><b>Mouthfeel:</b> Increase Dose to <b>${(d + 0.4).toFixed(1)}g</b>.`;
+      else if (body > 6) textureAdvice = `<br><b>Mouthfeel:</b> Decrease Dose to <b>${(d - 0.4).toFixed(1)}g</b>.`;
+
+      let tempAdvice = "";
+      if (taste < 5 && temp < 95) tempAdvice = `<br><b>Thermal:</b> Increase Temp to <b>${Math.min(96, temp + 2)}°C</b>.`;
+      else if (taste > 5 && temp > 90) tempAdvice = `<br><b>Thermal:</b> Decrease Temp to <b>${Math.max(88, temp - 2)}°C</b>.`;
 
       if (taste !== 5) {
-        const targetY = (d * tRatio).toFixed(1);
+        const targetY = (Math.round((d * tRatio) * 2) / 2).toFixed(1);
         const targetT = (taste < 5) ? Math.round(t * 1.2) : Math.round(t * 0.8);
         const yVerb = (targetY > y) ? "Increase" : "Reduce";
         const gVerb = (targetT > t) ? "FINER" : "COARSER";
-        advice = `<b>Primary Fix:</b> ${yVerb} Yield to <b>${targetY}g</b>. <br><b>Secondary Fix:</b> Grind <b>${gVerb}</b> to hit <b>${targetT}s</b>.`;
-      } else {
-        advice = textureAdvice ? "Flavor is dialed." : "Recipe is optimal.";
-      }
-
-      advice += textureAdvice;
-      document.getElementById('stat-ey').innerText = flow > 1.7 ? "LOW (Channeling?)" : "STABLE";
+        const yieldLine = (Math.abs(targetY - y) < 0.1) ? "" : `<b>Primary Fix:</b> ${yVerb} Yield to <b>${targetY}g</b>.<br>`;
+        advice = `${yieldLine}<b>Secondary Fix:</b> Grind <b>${gVerb}</b> to hit <b>${targetT}s</b>.`;
+      } else { advice = (textureAdvice || tempAdvice) ? "Flavor is dialed." : "Recipe is optimal."; }
+      if (currentEY > 23.5) advice = "<b>EMERGENCY:</b> Extraction is critically high. Coarsen grind immediately.";
+      advice += textureAdvice + tempAdvice;
     }
     document.getElementById('diag-msg').innerHTML = msg || "Initial Alignment Mode";
     document.getElementById('target-text').innerHTML = advice || "Set metrics to see targets.";
   }
 
   function saveToStorage() {
-    const data = { roast, isCalibrated, base, shotCount, history: document.querySelector('#shot-history tbody').innerHTML, values: {} };
+    const data = { roast, isCalibrated, base, history: document.querySelector('#shot-history tbody').innerHTML, values: {} };
     ids.forEach(id => data.values[id] = document.getElementById('v-' + id).value);
     localStorage.setItem('espressoLabData', JSON.stringify(data));
   }
 
   function loadFromStorage() {
     const saved = localStorage.getItem('espressoLabData'); if (!saved) return;
-    const data = JSON.parse(saved); roast = data.roast; isCalibrated = data.isCalibrated; base = data.base; shotCount = data.shotCount;
+    const data = JSON.parse(saved); roast = data.roast; isCalibrated = data.isCalibrated; base = data.base;
     const roastBtn = Array.from(document.querySelectorAll('.roast-btn')).find(b => b.innerText.toLowerCase() === roast);
     if (roastBtn) setRoast(roast, roastBtn);
     ids.forEach(id => {
@@ -456,11 +590,11 @@ layout: default
       if (isCalibrated) {
         const marker = document.getElementById('m-' + id); const slider = document.getElementById('v-' + id);
         const percent = (base[id] - slider.min) / (slider.max - slider.min) * 100;
-        marker.style.left = percent + "%"; marker.style.display = "block";
+        marker.style.left = getMarkerLeft(percent); marker.style.display = "block";
       }
     });
     document.querySelector('#shot-history tbody').innerHTML = data.history;
-    if (isCalibrated) document.getElementById('cal-btn').innerText = "UPDATE & RE-CALIBRATE";
+    if (isCalibrated) document.getElementById('cal-btn').innerText = "UPDATE SHOT & RE-CALIBRATE";
     updateLogic();
   }
 
