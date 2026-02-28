@@ -13,7 +13,7 @@ locale: "en-US"
 theme: minimal-mistakes-jekyll
 minimal_mistakes_skin: "dirt"
 repository: helsachan/helsachan.github.io
-include: ["_pages", "_category"]
+include: ["_pages"]
 
 defaults:
   - scope:
@@ -31,5 +31,4 @@ comments:
     theme: "github-light" # "github-dark"
     issue_term: "pathname"
 masthead_title: "Helsa Chan -- I make cakes..."
-permalink: "/:categories/:title/"
-search: true\
+search: true
