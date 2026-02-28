@@ -10,10 +10,12 @@ logo: "/apple-touch-icon.png"
 
 # Build settings
 locale: "en-US"
-theme: minimal-mistakes-jekyll
+remote_theme: "mmistakes/minimal-mistakes@4.27.3"
 minimal_mistakes_skin: "dirt"
 repository: helsachan/helsachan.github.io
 include: ["_pages"]
+plugins:
+  - jekyll-include-cache
 
 defaults:
   - scope:
