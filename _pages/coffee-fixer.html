@@ -1,0 +1,479 @@
+---
+permalink: /coffee-fixer.html
+layout: default
+---
+
+<div id="espresso-app-wrapper">
+  <div class="lab-header">
+    <h3 style="border:none; margin-bottom: 5px;">Espresso Precision Counselor</h3>
+    <p style="opacity: 0.7; font-style: italic; font-size: 0.75rem;">Flavor & Texture Balancing Engine</p>
+  </div>
+
+  <div class="lab-grid">
+    <div class="lab-panel">
+      <span class="panel-h">Physical Recipe</span>
+
+      <div class="roast-toggle">
+        <button class="roast-btn" onclick="setRoast('light', this)">Light</button>
+        <button class="roast-btn active" onclick="setRoast('medium', this)">Medium</button>
+        <button class="roast-btn" onclick="setRoast('dark', this)">Dark</button>
+      </div>
+
+
+      <div class="control-row">
+        <div class="label-wrap"><label>Dose</label><span><input type="number" step="0.2" class="val-input" id="n-dose"
+              value="18.0"> g</span></div>
+        <div class="slider-container">
+          <input type="range" id="v-dose" min="17" max="25" step="0.2" value="18">
+          <div class="marker" id="m-dose"></div>
+        </div>
+      </div>
+
+      <div class="control-row">
+        <div class="label-wrap"><label>Yield</label><span><input type="number" step="0.5" class="val-input" id="n-yield"
+              value="36.0"> g</span></div>
+        <div class="slider-container">
+          <input type="range" id="v-yield" min="15" max="65" step="0.5" value="36">
+          <div class="marker" id="m-yield"></div>
+        </div>
+      </div>
+
+      <div class="control-row">
+        <div class="label-wrap"><label>Shot Time</label><span><input type="number" class="val-input" id="n-time"
+              value="28"> s</span></div>
+        <div class="slider-container">
+          <input type="range" id="v-time" min="10" max="60" value="28">
+          <div class="marker" id="m-time"></div>
+        </div>
+      </div>
+
+      <div class="control-row">
+        <div class="label-wrap"><label>Water Temp</label><span><input type="number" class="val-input" id="n-temp"
+              value="93"> °C</span></div>
+        <div class="slider-container">
+          <input type="range" id="v-temp" min="85" max="98" value="93">
+          <div class="marker" id="m-temp"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lab-panel">
+      <span class="panel-h">Sensory Feedback</span>
+      <div class="control-row">
+        <div class="label-wrap"><label>Flavor (Extraction)</label><input type="number" class="val-input" id="n-taste"
+            value="5"></div>
+        <div class="range-labels"><span>Sour</span><span>Balanced</span><span>Bitter</span></div>
+        <div class="slider-container">
+          <input type="range" id="v-taste" min="1" max="9" value="5">
+          <div class="marker" id="m-taste"></div>
+        </div>
+      </div>
+
+      <div class="control-row">
+        <div class="label-wrap"><label>Mouthfeel (Texture)</label><input type="number" class="val-input" id="n-body"
+            value="5"></div>
+        <div class="range-labels"><span>Watery</span><span>Creamy</span><span>Syrupy</span></div>
+        <div class="slider-container">
+          <input type="range" id="v-body" min="1" max="9" value="5">
+          <div class="marker" id="m-body"></div>
+        </div>
+      </div>
+
+      <button class="main-action-btn" id="cal-btn" onclick="calibrate()">LOG SHOT & CALIBRATE</button>
+    </div>
+  </div>
+
+  <div class="diag-box">
+    <div id="diag-msg" style="font-weight: bold; font-size: 1rem;">Awaiting Baseline...</div>
+    <div class="target-card">
+      <h4 style="border:none; margin:0 0 8px 0; color:var(--goldcol); font-size:0.7rem; text-transform:uppercase;">
+        Correction Plan</h4>
+      <div id="target-text" style="font-size: 0.8rem;">Adjust sliders and calibrate to see targets.</div>
+    </div>
+    <div class="stats-strip">
+      <span>RATIO: <span class="stat-val" id="stat-ratio">1:2.0</span></span>
+      <span>FLOW: <span class="stat-val" id="stat-flow">--</span></span>
+      <span>EY: <span class="stat-val" id="stat-ey">--</span></span>
+    </div>
+  </div>
+
+  <div class="table-scroll">
+    <table class="history-table" id="shot-history">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Roast</th>
+          <th>Recipe</th>
+          <th>Time</th>
+          <th>Temp</th>
+          <th>Taste</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div class="footer-actions">
+    <button class="btn-reset" onclick="resetAll()">Clear All Data</button>
+  </div>
+</div>
+
+<style>
+  #espresso-app-wrapper {
+    --coffeecol: #2c1e1a;
+    --accentcol: #a67c52;
+    --goldcol: #d4a373;
+    width: 100%;
+    max-width: 60%;
+    margin: 2rem auto;
+    font-size: 0.85rem;
+    line-height: 1.4;
+  }
+
+  @media screen and (max-width: 1024px) {
+    #espresso-app-wrapper {
+      max-width: 100%;
+      padding: 10px;
+    }
+  }
+
+  #espresso-app-wrapper * {
+    box-sizing: border-box;
+  }
+
+  #espresso-app-wrapper .lab-header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  #espresso-app-wrapper h3 {
+    margin: 0;
+    font-size: 1.3rem;
+    border: none;
+  }
+
+  #espresso-app-wrapper .lab-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+
+  #espresso-app-wrapper .lab-panel {
+    border: 1px solid #eee;
+    padding: 15px;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.02);
+  }
+
+  #espresso-app-wrapper .panel-h {
+    font-weight: 800;
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    color: #999;
+    display: block;
+    margin-bottom: 12px;
+    letter-spacing: 0.5px;
+  }
+
+  #espresso-app-wrapper .roast-toggle {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 15px;
+  }
+
+  #espresso-app-wrapper .roast-btn {
+    flex: 1;
+    padding: 6px;
+    border: 1px solid #ddd;
+    background: white;
+    cursor: pointer;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 0.7rem;
+  }
+
+  #espresso-app-wrapper .roast-btn.active {
+    background: var(--coffeecol);
+    color: white;
+    border-color: var(--coffeecol);
+  }
+
+  #espresso-app-wrapper .control-row {
+    margin-bottom: 15px;
+    position: relative;
+  }
+
+  #espresso-app-wrapper .label-wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+
+  #espresso-app-wrapper .label-wrap label {
+    font-weight: 700;
+    font-size: 0.85rem;
+    margin: 0;
+  }
+
+  #espresso-app-wrapper .val-input {
+    width: 75px;
+    padding: 6px 4px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    text-align: center;
+    font-weight: 800;
+    font-size: 1rem;
+    color: var(--accentcol);
+    background-color: #fff;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+
+  #espresso-app-wrapper .val-input:focus {
+    border-color: var(--accentcol);
+  }
+
+  #espresso-app-wrapper .marker {
+    position: absolute;
+    width: 3px;
+    background: var(--goldcol);
+    width: 3px;
+    height: 18px;
+    /* Slightly taller than the track */
+
+    /* Center it vertically over the slider track */
+    top: 50%;
+    transform: translate(-50%, -50%);
+
+    z-index: 1;
+    /* Sits behind the slider thumb, but over the track */
+    border-radius: 2px;
+    display: none;
+    pointer-events: none;
+    /* Prevents the marker from blocking clicks on the slider */
+  }
+
+  #espresso-app-wrapper input[type=range] {
+    width: 100%;
+    accent-color: var(--coffeecol);
+    margin: 6px 0;
+    height: 4px;
+    position: relative;
+    z-index: 2;
+    /* Thumb sits above marker */
+    background: transparent;
+    /* Allows marker to show through the track if desired */
+  }
+
+
+  /* Ensure the range container is the anchor */
+  #espresso-app-wrapper .slider-container {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    /* Centers the input vertically */
+  }
+
+  #espresso-app-wrapper .diag-box {
+    background: var(--coffeecol);
+    color: white;
+    padding: 18px;
+    border-radius: 8px;
+    border-left: 5px solid var(--goldcol);
+    margin-bottom: 25px;
+  }
+
+  #espresso-app-wrapper .target-card {
+    background: rgba(255, 255, 255, 0.08);
+    padding: 12px;
+    border-radius: 6px;
+    margin-top: 12px;
+  }
+
+  #espresso-app-wrapper .stats-strip {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 12px;
+    font-family: monospace;
+    font-size: 0.7rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 10px;
+  }
+
+  #espresso-app-wrapper .stat-val {
+    color: var(--goldcol);
+  }
+
+  #espresso-app-wrapper .table-scroll {
+    overflow-x: auto;
+    margin-top: 15px;
+  }
+
+  #espresso-app-wrapper .history-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.75rem;
+  }
+
+  #espresso-app-wrapper .history-table th {
+    border-bottom: 2px solid #eee;
+    text-align: left;
+    padding: 6px;
+    color: #888;
+  }
+
+  #espresso-app-wrapper .history-table td {
+    padding: 6px;
+    border-bottom: 1px solid #f9f9f9;
+  }
+
+  #espresso-app-wrapper .main-action-btn {
+    background: var(--accentcol);
+    color: white;
+    border: none;
+    padding: 10px;
+    width: 100%;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 0.8rem;
+  }
+
+  #espresso-app-wrapper .btn-reset {
+    background: none;
+    border: 1px solid #ddd;
+    color: #999;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.65rem;
+  }
+
+  #espresso-app-wrapper .range-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.55rem;
+    color: #999;
+  }
+
+  #espresso-app-wrapper .footer-actions {
+    text-align: right;
+    margin-top: 15px;
+  }
+</style>
+
+<script>
+  {% raw %}
+  let isCalibrated = false; let roast = 'medium'; let shotCount = 0;
+  let base = { dose: 18, yield: 36, time: 28, temp: 93, taste: 5, body: 5 };
+  const ids = ['dose', 'yield', 'time', 'temp', 'taste', 'body'];
+
+  function setRoast(type, btn) {
+    roast = type; document.querySelectorAll('.roast-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active'); updateLogic(); saveToStorage();
+  }
+
+  function sync(id, val, isSlider) {
+    val = parseFloat(val); if (isSlider) document.getElementById('n-' + id).value = val;
+    else document.getElementById('v-' + id).value = val;
+    updateLogic(); saveToStorage();
+  }
+
+  function calibrate() {
+    isCalibrated = true; shotCount++;
+    ids.forEach(id => {
+      base[id] = parseFloat(document.getElementById('v-' + id).value);
+      const marker = document.getElementById('m-' + id); const slider = document.getElementById('v-' + id);
+      const percent = (base[id] - slider.min) / (slider.max - slider.min) * 100;
+      marker.style.left = percent + "%"; marker.style.display = "block";
+    });
+    const tbody = document.querySelector('#shot-history tbody');
+    const row = tbody.insertRow(0);
+    row.innerHTML = `<td>${shotCount}</td><td>${roast}</td><td>${base.dose}/${base.yield}</td><td>${base.time}s</td><td>${base.temp}°</td><td>${base.taste}/9</td>`;
+    document.getElementById('cal-btn').innerText = "UPDATE & RE-CALIBRATE";
+    updateLogic(); saveToStorage();
+  }
+
+  function updateLogic() {
+    const d = parseFloat(document.getElementById('v-dose').value), y = parseFloat(document.getElementById('v-yield').value), t = parseFloat(document.getElementById('v-time').value), temp = parseFloat(document.getElementById('v-temp').value), taste = parseInt(document.getElementById('v-taste').value), body = parseInt(document.getElementById('v-body').value);
+    const ratio = (y / d).toFixed(2), flow = (y / t).toFixed(2);
+    document.getElementById('stat-ratio').innerText = `1:${ratio}`;
+    document.getElementById('stat-flow').innerText = `${flow} g/s`;
+
+    let msg = "", advice = "";
+    if (isCalibrated) {
+      // FLAVOR LOGIC
+      let tRatio;
+      if (taste < 5) { // Sour
+        tRatio = (roast === 'light' ? 2.5 : (roast === 'medium' ? 2.2 : 2.0));
+        msg = "🍋 Analysis: UNDER-EXTRACTED (Sour)";
+      } else if (taste > 5) { // Bitter
+        tRatio = (roast === 'light' ? 2.0 : (roast === 'medium' ? 1.8 : 1.5));
+        msg = "🔥 Analysis: OVER-EXTRACTED (Bitter)";
+      } else { msg = "✨ Analysis: BALANCED FLAVOR"; }
+
+      // TEXTURE LOGIC (NEW)
+      let textureAdvice = "";
+      if (body < 4) { // Watery
+        textureAdvice = `<br><b>Mouthfeel Fix:</b> Increase Dose to <b>${(d + 0.5).toFixed(1)}g</b> or tighten Ratio to increase strength.`;
+      } else if (body > 6) { // Syrupy/Muddy
+        textureAdvice = `<br><b>Mouthfeel Fix:</b> Decrease Dose to <b>${(d - 0.5).toFixed(1)}g</b> or slightly increase Yield to dilute intensity.`;
+      }
+
+      if (taste !== 5) {
+        const targetY = (d * tRatio).toFixed(1);
+        const targetT = (taste < 5) ? Math.round(t * 1.2) : Math.round(t * 0.8);
+        const yVerb = (targetY > y) ? "Increase" : "Reduce";
+        const gVerb = (targetT > t) ? "FINER" : "COARSER";
+        advice = `<b>Primary Fix:</b> ${yVerb} Yield to <b>${targetY}g</b>. <br><b>Secondary Fix:</b> Grind <b>${gVerb}</b> to hit <b>${targetT}s</b>.`;
+      } else {
+        advice = textureAdvice ? "Flavor is dialed." : "Recipe is optimal.";
+      }
+
+      advice += textureAdvice;
+      document.getElementById('stat-ey').innerText = flow > 1.7 ? "LOW (Channeling?)" : "STABLE";
+    }
+    document.getElementById('diag-msg').innerHTML = msg || "Initial Alignment Mode";
+    document.getElementById('target-text').innerHTML = advice || "Set metrics to see targets.";
+  }
+
+  function saveToStorage() {
+    const data = { roast, isCalibrated, base, shotCount, history: document.querySelector('#shot-history tbody').innerHTML, values: {} };
+    ids.forEach(id => data.values[id] = document.getElementById('v-' + id).value);
+    localStorage.setItem('espressoLabData', JSON.stringify(data));
+  }
+
+  function loadFromStorage() {
+    const saved = localStorage.getItem('espressoLabData'); if (!saved) return;
+    const data = JSON.parse(saved); roast = data.roast; isCalibrated = data.isCalibrated; base = data.base; shotCount = data.shotCount;
+    const roastBtn = Array.from(document.querySelectorAll('.roast-btn')).find(b => b.innerText.toLowerCase() === roast);
+    if (roastBtn) setRoast(roast, roastBtn);
+    ids.forEach(id => {
+      sync(id, data.values[id], true);
+      if (isCalibrated) {
+        const marker = document.getElementById('m-' + id); const slider = document.getElementById('v-' + id);
+        const percent = (base[id] - slider.min) / (slider.max - slider.min) * 100;
+        marker.style.left = percent + "%"; marker.style.display = "block";
+      }
+    });
+    document.querySelector('#shot-history tbody').innerHTML = data.history;
+    if (isCalibrated) document.getElementById('cal-btn').innerText = "UPDATE & RE-CALIBRATE";
+    updateLogic();
+  }
+
+  function resetAll() {
+    if (confirm("Clear all shot history and calibration data?")) {
+      localStorage.removeItem('espressoLabData'); location.reload();
+    }
+  }
+
+  ids.forEach(id => {
+    document.getElementById('v-' + id).addEventListener('input', (e) => sync(id, e.target.value, true));
+    document.getElementById('n-' + id).addEventListener('input', (e) => sync(id, e.target.value, false));
+  });
+  window.addEventListener('DOMContentLoaded', loadFromStorage);
+  {% endraw %}
+</script>
