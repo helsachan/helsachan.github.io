@@ -6,7 +6,7 @@ url: "https://helsachan.github.io" # the base hostname & protocol for your site,
 linkedin_username: helsachan
 github_username:  helsachan
 github: [metadata]
-logo: "/apple-touch-icon.png"
+logo: "/image.png"
 
 # Build settings
 locale: "en-US"
@@ -32,5 +32,5 @@ comments:
   utterances:
     theme: "github-light" # "github-dark"
     issue_term: "pathname"
-masthead_title: "Helsa Chan -- I make cakes..."
+masthead_title: "helsachan.github.io"
 search: true
