@@ -5,7 +5,7 @@ layout: default
 
 <div id="espresso-app-wrapper">
   <div style="text-align:center; min-height: 90px; margin-bottom: 20px;">
-    <h2 style="margin:0; border:none; font-weight: 800;">Espresso Precision Counselor</h2>
+    <h2 style="margin:0; border:none; font-weight: 800;">Espresso Fixer</h2>
     <div id="rotating-instructions" class="instructions-box">
       How to use: Set variables and calibrate to mark your baseline.
     </div>
@@ -86,8 +86,8 @@ layout: default
       <div class="lab-panel">
         <span class="panel-h">Sensory Feedback</span>
         <div class="control-row">
-          <div class="label-wrap"><label>Taste (Flavor Balance)</label><input type="number" class="val-input"
-              id="n-taste" value="5"></div>
+          <div class="label-wrap"><label>Taste</label><input type="number" class="val-input" id="n-taste" value="5">
+          </div>
           <div class="range-labels"><span>Sour</span><span>Balanced</span><span>Bitter</span></div>
           <div class="slider-container">
             <input type="range" id="v-taste" min="1" max="9" step="1" value="5">
@@ -95,8 +95,7 @@ layout: default
           </div>
         </div>
         <div class="control-row" style="margin-bottom: 25px;">
-          <div class="label-wrap"><label>Body (Mouthfeel)</label><input type="number" class="val-input" id="n-body"
-              value="5"></div>
+          <div class="label-wrap"><label>Body</label><input type="number" class="val-input" id="n-body" value="5"></div>
           <div class="range-labels"><span>Watery</span><span>Creamy</span><span>Syrupy</span></div>
           <div class="slider-container">
             <input type="range" id="v-body" min="1" max="9" step="1" value="5">
@@ -104,7 +103,7 @@ layout: default
           </div>
         </div>
       </div>
-      <div class="lab-panel" style="background: none; border: none; padding: 0;">
+      <div class="lab-panel" style="background: none; border: none; padding: 10;">
         <button class="main-action-btn" id="cal-btn" onclick="calibrate()">LOG SHOT & CALIBRATE</button>
       </div>
     </div>
@@ -127,8 +126,8 @@ layout: default
   <div id="taste-guide" class="help-content" style="display:none;">
     <h4 style="margin:0 0 10px 0; border:none; font-size: 0.8rem;">The 1–9 Sensory Guide</h4>
     <div class="guide-grid">
-      <div style="font-size: 0.6rem;"><strong>Flavor:</strong> 1-3 is Sour. 5 is Balanced. 7-9 is Bitter.</div>
-      <div style="font-size: 0.6rem;"><strong>Mouthfeel:</strong> 1-3 is Watery. 5 is Creamy. 7-9 is Syrupy.</div>
+      <div style="font-size: 0.6rem;"><strong>Taste (T):</strong> 1-3 is Sour. 5 is Balanced. 7-9 is Bitter.</div>
+      <div style="font-size: 0.6rem;"><strong>Body (B):</strong> 1-3 is Watery. 5 is Creamy. 7-9 is Syrupy.</div>
     </div>
   </div>
 
@@ -596,7 +595,7 @@ layout: default
       ctx.fillStyle = "white"; ctx.font = "bold 36px sans-serif";
       ctx.fillText(data.dose + "g", 50, 280); ctx.fillText(data.yield + "g", 180, 280);
       ctx.fillText(data.time + "s", 50, 380); ctx.fillText(data.temp + "°C", 180, 380);
-      ctx.font = "italic 16px sans-serif"; ctx.fillStyle = "#d4a373"; ctx.fillText("Dialed via Espresso Precision Counselor on " + now.toISOString().slice(0, 10), 50, 450);
+      ctx.font = "italic 16px sans-serif"; ctx.fillStyle = "#d4a373"; ctx.fillText("Dialed via Espresso Fixer on " + now.toISOString().slice(0, 10), 50, 450);
 
       c.toBlob((blob) => {
         const url = URL.createObjectURL(blob);
@@ -645,6 +644,8 @@ layout: default
     if (isCalibrated) document.getElementById('cal-btn').innerText = "UPDATE SHOT & RE-CALIBRATE";
     updateLogic(); setTimeout(() => { appLoading = false; }, 100);
   }
+
+  function toggleHelp() { const guide = document.getElementById('taste-guide'); guide.style.display = guide.style.display === 'none' ? 'block' : 'none'; }
 
   function resetAll() { if (confirm("Wipe all brewing data?")) { localStorage.removeItem('espressoLabData'); window.location.reload(); } }
   ids.forEach(id => {
