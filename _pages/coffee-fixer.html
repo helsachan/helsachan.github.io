@@ -505,8 +505,8 @@ layout: default
   function addHistoryRow(timeStr, roaster, beans, rst, grind, dose, yield, time, temp, ey, taste, body) {
     const tbody = document.querySelector('#shot-history tbody');
     const row = tbody.insertRow(0);
-    const isGolden = (taste === 5 && body === 5);
-    const shotData = JSON.stringify({ roaster, beans, rst, grind, dose, yield, time, temp, ey }).replace(/"/g, '&quot;');
+    const isGolden = (taste >= 4 && taste <= 6 && body >= 4 && body <= 6);
+    const shotData = JSON.stringify({ roaster, beans, rst, grind, dose, yield, time, temp, ey, taste, body }).replace(/"/g, '&quot;');
     const saveBtn = isGolden ? `<button class="btn-save-row" onclick="exportRecipePNG('${shotData}')">📸</button>` : '';
     row.innerHTML = `<td>${timeStr}</td><td>${roaster} / ${beans}</td><td>${rst.toUpperCase()}</td><td>${grind}</td><td>${dose}/${yield}</td><td>${temp}°</td><td>${time}s</td><td>${ey}%</td><td>T:${taste} B:${body}</td><td>${saveBtn}<button class="btn-delete-row" onclick="removeRow(this)">×</button></td>`;
     pruneHistory();
@@ -522,34 +522,84 @@ layout: default
     if (roast === 'light') ey -= 1.5; if (roast === 'dark') ey += 1.5;
     return parseFloat(ey.toFixed(1));
   }
-
   function updateLogic() {
-    const d = parseFloat(document.getElementById('v-dose').value), y = parseFloat(document.getElementById('v-yield').value), t = parseFloat(document.getElementById('v-time').value), temp = parseFloat(document.getElementById('v-temp').value), taste = parseInt(document.getElementById('v-taste').value), body = parseInt(document.getElementById('v-body').value);
-    const currentEY = calculateEY(), ratio = (y / d).toFixed(2);
+    const d = parseFloat(document.getElementById('v-dose').value);
+    const y = parseFloat(document.getElementById('v-yield').value);
+    const t = parseFloat(document.getElementById('v-time').value);
+    const temp = parseFloat(document.getElementById('v-temp').value);
+    const taste = parseInt(document.getElementById('v-taste').value);
+    const body = parseInt(document.getElementById('v-body').value);
+
+    const diagBox = document.getElementById('diagnosis-container');
+    const msgEl = document.getElementById('diag-msg');
+    const targetEl = document.getElementById('target-text');
+
+    // --- 1. INTEGRITY AUDITOR (CORRECTED) ---
+    const flowRate = y / t;
+    if (y < d) { msgEl.innerHTML = "⚠️ INPUT ERROR"; targetEl.innerHTML = "Yield cannot be lower than Dose."; return; }
+
+    if (flowRate > 4.0 && t < 15) {
+      msgEl.innerHTML = "🌊 CRITICAL LEAK";
+      targetEl.innerHTML = "Flow is too high. Your grind is <b>TOO COARSE</b> or the puck has channeled. Grind <b>FINER</b> immediately.";
+      diagBox.style.borderLeftColor = "var(--danger)";
+      return;
+    }
+
+    // --- 2. ROAST-SPECIFIC TEMP GUARD ---
+    let tempWarning = "";
+    if (roast === 'dark' && temp > 91) {
+      tempWarning = `<br><span style="color:#ffcc00">⚠️ <b>TEMP ALERT:</b> ${temp}°C is high for Dark Roast. If you taste 'ash' or 'rubber', drop to 88-90°C.</span>`;
+    } else if (roast === 'light' && temp < 93) {
+      tempWarning = `<br><span style="color:#ffcc00">⚠️ <b>TEMP ALERT:</b> ${temp}°C is low for Light Roast. If you can't shake the sourness, rise to 94-96°C.</span>`;
+    }
+
+    // --- 3. STATS & CALIBRATION CHECK ---
+    const currentEY = calculateEY();
+    const ratio = (y / d).toFixed(2);
     document.getElementById('stat-ratio').innerText = `1:${ratio}`;
     document.getElementById('stat-ey').innerText = `${currentEY}%`;
-    const diagBox = document.getElementById('diagnosis-container');
-    if (currentEY > 22.5) diagBox.classList.add('ey-warning'); else diagBox.classList.remove('ey-warning');
-    if (isCalibrated) {
-      let msg = "", advice = "";
-      let tRatio = (roast === 'light' ? 2.3 : (roast === 'medium' ? 2.0 : 1.8));
-      if (taste < 5) { tRatio += 0.3; msg = "🍋 Analysis: UNDER-EXTRACTED (Sour)"; }
-      else if (taste > 5) { tRatio -= 0.3; msg = currentEY > 22.5 ? "💀 Analysis: SEVERE OVER-EXTRACTION" : "🔥 Analysis: OVER-EXTRACTED (Bitter)"; }
-      else { msg = "✨ Analysis: BALANCED FLAVOR"; }
-      let textureAdvice = "";
-      if (body < 4) textureAdvice = `<br><b>Mouthfeel:</b> Increase Dose to <b>${(d + 0.4).toFixed(1)}g</b>.`;
-      else if (body > 6) textureAdvice = `<br><b>Mouthfeel:</b> Decrease Dose to <b>${(d - 0.4).toFixed(1)}g</b>.`;
-      if (taste !== 5) {
-        const targetY = (Math.round((d * tRatio) * 2) / 2).toFixed(1);
-        const targetT = (taste < 5) ? Math.round(t * 1.2) : Math.round(t * 0.8);
-        const yVerb = (targetY > y) ? "Increase" : "Reduce";
-        const gVerb = (targetT > t) ? "FINER" : "COARSER";
-        advice = `<b>Primary Fix:</b> ${yVerb} Yield to <b>${targetY}g</b>.<br><b>Secondary:</b> Grind <b>${gVerb}</b> to hit <b>${targetT}s</b>.`;
-      } else { advice = (textureAdvice) ? "Flavor is dialed." : "Recipe is optimal. 🦄"; }
-      document.getElementById('diag-msg').innerHTML = msg; document.getElementById('target-text').innerHTML = advice + textureAdvice;
-    }
-  }
+    if (!isCalibrated) { msgEl.innerHTML = "Awaiting Baseline..."; return; }
 
+    // --- 4. MULTI-STAGE DIAGNOSTICS ---
+    const tDist = Math.abs(taste - 5);
+    let msg = "", advice = "", color = "var(--goldcol)";
+
+    let idealRatio = (roast === 'light' ? 2.4 : (roast === 'medium' ? 2.1 : 1.8));
+    if (taste < 4) idealRatio += 0.3;
+    if (taste > 6) idealRatio -= 0.3;
+
+    const targetY = (d * idealRatio).toFixed(1);
+    const yieldError = Math.abs(y - targetY);
+
+    // STAGE A: MAJOR YIELD ADJUSTMENT
+    if (yieldError > 2.5 && tDist >= 2) {
+      const verb = targetY > y ? "Increase" : "Reduce";
+      msg = (taste < 5) ? "🍋 UNDER-EXTRACTED" : "🔥 OVER-EXTRACTED";
+      color = (taste < 5) ? "#4dabff" : "var(--danger)";
+      advice = `<b>Stage 1 (Yield):</b> ${verb} Yield to <b>${targetY}g</b>.`;
+    }
+    // STAGE B: FINE-TUNING (Grind & Temp)
+    else if (tDist > 0) {
+      msg = (taste < 5) ? "🌤️ NEARLY DIALED (Bright)" : "🌥️ NEARLY DIALED (Heavy)";
+      const grindVerb = (taste < 5) ? "FINER" : "COARSER";
+      const tempVerb = (taste < 5) ? "Increase" : "Reduce";
+      advice = `<b>Stage 2 (Fine-Tune):</b> Yield is in the ballpark. <br>
+              <b>1. Grind:</b> Go <b>${grindVerb}</b> to hit ${taste < 5 ? '28-32s' : '22-25s'}.<br>
+              <b>2. Temp:</b> <b>${tempVerb}</b> Temp by 2°C to shift extraction.`;
+    }
+    // STAGE C: PERFECT FLAVOR / TEXTURE
+    else {
+      msg = (body === 5) ? "✨ THE GOLDEN SHOT" : "☕ FLAVOR BALANCED";
+      const doseVerb = (body < 5) ? "Increase" : "Decrease";
+      advice = (body === 5) ? "Perfectly synchronized." : `<b>Final Stage:</b> <b>${doseVerb} Dose</b> by 0.5g for texture.`;
+    }
+
+    // UI Apply
+    diagBox.style.borderLeftColor = color;
+    msgEl.innerHTML = msg;
+    msgEl.style.color = color;
+    targetEl.innerHTML = advice + tempWarning;
+  }
   function exportCSV() {
     let rows = [["Date", "Identity", "Roast", "Grind", "Recipe", "EY%", "Sensory"]];
     document.querySelectorAll('#shot-history tbody tr').forEach(tr => { let data = Array.from(tr.cells).slice(0, 9).map(td => td.innerText); rows.push(data); });
@@ -588,11 +638,11 @@ layout: default
       ctx.font = "bold 14px sans-serif"; ctx.fillStyle = "#999"; ctx.fillText("GRINDER SETTING", 50, 150);
       ctx.fillStyle = "white"; ctx.font = "bold 20px sans-serif"; ctx.fillText(data.grind, 50, 175);
       ctx.font = "bold 20px sans-serif"; ctx.fillStyle = "#999";
-      ctx.fillText("DOSE", 50, 230); ctx.fillText("YIELD", 180, 230);
-      ctx.fillText("TIME", 50, 330); ctx.fillText("TEMP", 180, 330);
+      ctx.fillText("DOSE", 50, 230); ctx.fillText("YIELD", 180, 230); ctx.fillText("TASTE", 310, 230);
+      ctx.fillText("TIME", 50, 330); ctx.fillText("TEMP", 180, 330); ctx.fillText("BODY", 310, 330);
       ctx.fillStyle = "white"; ctx.font = "bold 36px sans-serif";
-      ctx.fillText(data.dose + "g", 50, 280); ctx.fillText(data.yield + "g", 180, 280);
-      ctx.fillText(data.time + "s", 50, 380); ctx.fillText(data.temp + "°C", 180, 380);
+      ctx.fillText(data.dose + "g", 50, 280); ctx.fillText(data.yield + "g", 180, 280); ctx.fillText(data.taste, 310, 280);
+      ctx.fillText(data.time + "s", 50, 380); ctx.fillText(data.temp + "°C", 180, 380); ctx.fillText(data.body, 310, 380);
       ctx.font = "italic 16px sans-serif"; ctx.fillStyle = "#d4a373"; ctx.fillText("Dialed via Espresso Fixer on " + now.toISOString().slice(0, 10), 50, 450);
 
       c.toBlob((blob) => {
