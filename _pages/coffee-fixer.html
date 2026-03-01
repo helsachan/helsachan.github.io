@@ -9,15 +9,7 @@ layout: default
     <div id="rotating-instructions" class="instructions-box">
       How to use: Set variables and calibrate to mark your baseline.
     </div>
-    <button class="help-toggle-btn" onclick="toggleHelp()">? View Taste Scale Guide</button>
-  </div>
 
-  <div id="taste-guide" class="help-content" style="display:none;">
-    <h4 style="margin:0 0 10px 0; border:none; font-size: 0.9rem;">The 1–9 Sensory Guide</h4>
-    <div class="guide-grid">
-      <div><strong>Flavor:</strong> 1-3 is Sour. 5 is Balanced. 7-9 is Bitter.</div>
-      <div><strong>Mouthfeel:</strong> 1-3 is Watery. 5 is Creamy. 7-9 is Syrupy.</div>
-    </div>
   </div>
 
   <div class="lab-grid">
@@ -91,8 +83,8 @@ layout: default
       <div class="lab-panel">
         <span class="panel-h">Sensory Feedback</span>
         <div class="control-row">
-          <div class="label-wrap"><label>Flavor Balance</label><input type="number" class="val-input" id="n-taste"
-              value="5"></div>
+          <div class="label-wrap"><label>Taste (Flavor Balance)</label><input type="number" class="val-input"
+              id="n-taste" value="5"></div>
           <div class="range-labels"><span>Sour</span><span>Balanced</span><span>Bitter</span></div>
           <div class="slider-container">
             <input type="range" id="v-taste" min="1" max="9" step="1" value="5">
@@ -100,7 +92,7 @@ layout: default
           </div>
         </div>
         <div class="control-row" style="margin-bottom: 25px;">
-          <div class="label-wrap"><label>Mouthfeel (Body)</label><input type="number" class="val-input" id="n-body"
+          <div class="label-wrap"><label>Body (Mouthfeel)</label><input type="number" class="val-input" id="n-body"
               value="5"></div>
           <div class="range-labels"><span>Watery</span><span>Creamy</span><span>Syrupy</span></div>
           <div class="slider-container">
@@ -114,6 +106,7 @@ layout: default
       </div>
     </div>
   </div>
+
 
   <div class="diag-box" id="diagnosis-container">
     <div id="diag-msg" style="font-weight: bold; font-size: 1.1rem; margin-bottom: 10px;">Awaiting Baseline...</div>
@@ -129,6 +122,14 @@ layout: default
     </div>
   </div>
 
+  <div id="taste-guide" class="help-content" style="display:none;">
+    <h4 style="margin:0 0 10px 0; border:none; font-size: 0.8rem;">The 1–9 Sensory Guide</h4>
+    <div class="guide-grid">
+      <div style="font-size: 0.6rem;"><strong>Flavor:</strong> 1-3 is Sour. 5 is Balanced. 7-9 is Bitter.</div>
+      <div style="font-size: 0.6rem;"><strong>Mouthfeel:</strong> 1-3 is Watery. 5 is Creamy. 7-9 is Syrupy.</div>
+    </div>
+  </div>
+
   <div class="table-scroll">
     <table class="history-table" id="shot-history">
       <thead>
@@ -141,8 +142,8 @@ layout: default
           <th>Temp</th>
           <th>Time</th>
           <th>EY%</th>
-          <th>Sensory</th>
-          <th style="width:80px;"></th>
+          <th><button class="help-toggle-btn" onclick="toggleHelp()">Sensory</button></th>
+          <th style="width:100px;"></th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -194,15 +195,6 @@ layout: default
     justify-content: center;
   }
 
-  #espresso-app-wrapper .help-toggle-btn {
-    background: none;
-    border: 1px solid var(--accentcol);
-    color: var(--accentcol);
-    padding: 4px 12px;
-    border-radius: 20px;
-    cursor: pointer;
-    font-size: 0.75rem;
-  }
 
   #espresso-app-wrapper .help-content {
     background: white;
@@ -371,6 +363,18 @@ layout: default
     border-bottom: 1px solid #f2f2f2;
   }
 
+  #espresso-app-wrapper .help-toggle-btn {
+    background: none;
+    border: none;
+    color: var(--accentcol);
+    padding: 0px 0px;
+    font-size: 0.62rem;
+    text-align: left;
+    font-weight: bold;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
   #espresso-app-wrapper .main-action-btn {
     color: white;
     border: none;
@@ -431,7 +435,6 @@ layout: default
     display: flex;
     justify-content: space-between;
     width: 100%;
-    padding: 0 5px;
     font-size: 0.6rem;
     color: #aaa;
     margin-bottom: -5px;
@@ -577,11 +580,23 @@ layout: default
     const ctx = c.getContext('2d');
     const now = new Date();
     const stamp = now.toISOString().slice(0, 10).replace(/-/g, '');
+    // 1. Create the image object from your assets
+    const bgImg = new Image();
+    bgImg.src = '/assets/images/coffee-fixer.png'; // Your specific path
 
-    const drawCard = () => {
+    bgImg.onload = () => {
       // Background & Border
       ctx.fillStyle = "#2c1e1a";
-      ctx.fillRect(0, 0, 600, 400);
+      ctx.fillRect(0, 0, 600, 400);// 3. Draw Watermark (Lower Opacity)
+      ctx.save(); // Save state to isolate opacity
+      // ctx.globalAlpha = 0.2; // Set opacity (0.1 to 0.3 usually looks best)
+
+      // This draws the image to cover the full background
+      // If you want it as a logo in the corner, use: ctx.drawImage(bgImg, 430, 45, 120, 120);
+      ctx.drawImage(bgImg, 450, 50, 120, 120);
+
+      ctx.restore(); // Restore state so text is 100% opaque
+
       ctx.strokeStyle = "#d4a373";
       ctx.lineWidth = 10;
       ctx.strokeRect(20, 20, 560, 360);
@@ -627,19 +642,7 @@ layout: default
       }, 'image/png');
 
 
-
-
-
-
-
-
-
-
     };
-
-
-
-    drawCard(); // Export without image if none selected
   }
 
   function saveToStorage() {
