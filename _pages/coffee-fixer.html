@@ -9,7 +9,6 @@ layout: default
     <div id="rotating-instructions" class="instructions-box">
       How to use: Set variables and calibrate to mark your baseline.
     </div>
-
   </div>
 
   <div class="lab-grid">
@@ -33,6 +32,10 @@ layout: default
             <button class="roast-btn active" onclick="setRoast('medium', this)">Med</button>
             <button class="roast-btn" onclick="setRoast('dark', this)">Dark</button>
           </div>
+        </div>
+        <div class="control-row">
+          <label class="section-label-tiny">Custom Card Image (Optional)</label>
+          <input type="file" id="recipe-image-input" class="name-input" accept="image/*" style="font-size:0.7rem;">
         </div>
       </div>
     </div>
@@ -107,7 +110,6 @@ layout: default
     </div>
   </div>
 
-
   <div class="diag-box" id="diagnosis-container">
     <div id="diag-msg" style="font-weight: bold; font-size: 1.1rem; margin-bottom: 10px;">Awaiting Baseline...</div>
     <div class="target-card" style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px;">
@@ -160,7 +162,7 @@ layout: default
   </div>
 </div>
 
-<canvas id="recipe-canvas" width="600" height="400" style="display:none;"></canvas>
+<canvas id="recipe-canvas" width="500" height="500" style="display:none;"></canvas>
 
 <style>
   #espresso-app-wrapper {
@@ -194,7 +196,6 @@ layout: default
     align-items: center;
     justify-content: center;
   }
-
 
   #espresso-app-wrapper .help-content {
     background: white;
@@ -430,7 +431,6 @@ layout: default
     border-color: var(--coffeecol);
   }
 
-  /* THE FIX: Labeled Labels */
   #espresso-app-wrapper .range-labels {
     display: flex;
     justify-content: space-between;
@@ -498,18 +498,14 @@ layout: default
     const roaster = document.getElementById('roaster-name').value || "Unknown";
     const beans = document.getElementById('beans-name').value || "Beans";
     const grind = document.getElementById('grinder-setting').value || "--";
-
     ids.forEach(id => {
       const slider = document.getElementById('v-' + id);
       const val = parseFloat(slider.value);
-      base[id] = val;
-      document.getElementById('n-' + id).value = val;
+      base[id] = val; document.getElementById('n-' + id).value = val;
       const marker = document.getElementById('m-' + id);
       const percent = (val - slider.min) / (slider.max - slider.min) * 100;
-      marker.style.left = getMarkerLeft(percent);
-      marker.style.display = "block";
+      marker.style.left = getMarkerLeft(percent); marker.style.display = "block";
     });
-
     addHistoryRow(ts, roaster, beans, roast, grind, base.dose, base.yield, base.time, base.temp, currentEY, parseInt(document.getElementById('v-taste').value), parseInt(document.getElementById('v-body').value));
     document.getElementById('cal-btn').innerText = "UPDATE SHOT & RE-CALIBRATE";
     updateLogic(); saveToStorage();
@@ -543,18 +539,15 @@ layout: default
     document.getElementById('stat-ey').innerText = `${currentEY}%`;
     const diagBox = document.getElementById('diagnosis-container');
     if (currentEY > 22.5) diagBox.classList.add('ey-warning'); else diagBox.classList.remove('ey-warning');
-
     if (isCalibrated) {
       let msg = "", advice = "";
       let tRatio = (roast === 'light' ? 2.3 : (roast === 'medium' ? 2.0 : 1.8));
       if (taste < 5) { tRatio += 0.3; msg = "🍋 Analysis: UNDER-EXTRACTED (Sour)"; }
       else if (taste > 5) { tRatio -= 0.3; msg = currentEY > 22.5 ? "💀 Analysis: SEVERE OVER-EXTRACTION" : "🔥 Analysis: OVER-EXTRACTED (Bitter)"; }
       else { msg = "✨ Analysis: BALANCED FLAVOR"; }
-
       let textureAdvice = "";
       if (body < 4) textureAdvice = `<br><b>Mouthfeel:</b> Increase Dose to <b>${(d + 0.4).toFixed(1)}g</b>.`;
       else if (body > 6) textureAdvice = `<br><b>Mouthfeel:</b> Decrease Dose to <b>${(d - 0.4).toFixed(1)}g</b>.`;
-
       if (taste !== 5) {
         const targetY = (Math.round((d * tRatio) * 2) / 2).toFixed(1);
         const targetT = (taste < 5) ? Math.round(t * 1.2) : Math.round(t * 0.8);
@@ -573,76 +566,59 @@ layout: default
     let link = document.createElement("a"); link.setAttribute("href", encodeURI(csvContent)); link.setAttribute("download", "espresso_history.csv"); document.body.appendChild(link); link.click(); link.remove();
   }
 
-
+  // HYBRID PNG EXPORT: Supports local upload with default asset fallback
   function exportRecipePNG(jsonData) {
     const data = JSON.parse(jsonData);
     const c = document.getElementById('recipe-canvas');
     const ctx = c.getContext('2d');
+    const imageInput = document.getElementById('recipe-image-input');
     const now = new Date();
     const stamp = now.toISOString().slice(0, 10).replace(/-/g, '');
-    // 1. Create the image object from your assets
-    const bgImg = new Image();
-    bgImg.src = '/assets/images/coffee-fixer.png'; // Your specific path
 
-    bgImg.onload = () => {
-      // Background & Border
-      ctx.fillStyle = "#2c1e1a";
-      ctx.fillRect(0, 0, 600, 400);// 3. Draw Watermark (Lower Opacity)
-      ctx.save(); // Save state to isolate opacity
-      // ctx.globalAlpha = 0.2; // Set opacity (0.1 to 0.3 usually looks best)
+    const drawAndDownload = (img = null) => {
+      ctx.fillStyle = "#2c1e1a"; ctx.fillRect(0, 0, 500, 500);
 
-      // This draws the image to cover the full background
-      // If you want it as a logo in the corner, use: ctx.drawImage(bgImg, 430, 45, 120, 120);
-      ctx.drawImage(bgImg, 450, 50, 120, 120);
+      if (img) {
+        ctx.save();
+        ctx.globalAlpha = 0.25; // Subdued watermark opacity
+        const s = Math.max(500 / img.width, 500 / img.height); ctx.drawImage(img, (500 - img.width * s) / 2, (500 - img.height * s) / 2, img.width * s, img.height * s);
+        ctx.restore();
+      }
 
-      ctx.restore(); // Restore state so text is 100% opaque
-
-      ctx.strokeStyle = "#d4a373";
-      ctx.lineWidth = 10;
-      ctx.strokeRect(20, 20, 560, 360);
-
-      // Header Text
-      ctx.fillStyle = "#d4a373";
-      ctx.font = "bold 32px sans-serif";
-      ctx.fillText(data.roaster.toUpperCase(), 50, 75);
-      ctx.fillStyle = "white";
-      ctx.font = "22px sans-serif";
-      ctx.fillText(data.beans, 50, 105);
-
-      // Metadata
-      ctx.font = "bold 14px sans-serif"; ctx.fillStyle = "#999";
-      ctx.fillText("GRINDER SETTING", 50, 150);
-      ctx.fillStyle = "white"; ctx.font = "bold 20px sans-serif";
-      ctx.fillText(data.grind, 50, 175);
-
-      // Recipe Metrics
+      ctx.strokeStyle = "#d4a373"; ctx.lineWidth = 10; ctx.strokeRect(20, 20, 460, 460);
+      ctx.fillStyle = "#d4a373"; ctx.font = "bold 32px sans-serif"; ctx.fillText(data.roaster.toUpperCase(), 50, 75);
+      ctx.fillStyle = "white"; ctx.font = "22px sans-serif"; ctx.fillText(data.beans, 50, 105);
+      ctx.font = "bold 14px sans-serif"; ctx.fillStyle = "#999"; ctx.fillText("GRINDER SETTING", 50, 150);
+      ctx.fillStyle = "white"; ctx.font = "bold 20px sans-serif"; ctx.fillText(data.grind, 50, 175);
       ctx.font = "bold 20px sans-serif"; ctx.fillStyle = "#999";
       ctx.fillText("DOSE", 50, 230); ctx.fillText("YIELD", 180, 230);
-      ctx.fillText("TIME", 310, 230); ctx.fillText("TEMP", 440, 230);
-
+      ctx.fillText("TIME", 50, 330); ctx.fillText("TEMP", 180, 330);
       ctx.fillStyle = "white"; ctx.font = "bold 36px sans-serif";
-      ctx.fillText(data.dose + "g", 50, 280);
-      ctx.fillText(data.yield + "g", 180, 280);
-      ctx.fillText(data.time + "s", 310, 280);
-      ctx.fillText(data.temp + "°C", 440, 280);
+      ctx.fillText(data.dose + "g", 50, 280); ctx.fillText(data.yield + "g", 180, 280);
+      ctx.fillText(data.time + "s", 50, 380); ctx.fillText(data.temp + "°C", 180, 380);
+      ctx.font = "italic 16px sans-serif"; ctx.fillStyle = "#d4a373"; ctx.fillText("Dialed via Espresso Precision Counselor on " + now.toISOString().slice(0, 10), 50, 450);
 
-      // Footer
-      ctx.font = "italic 16px sans-serif"; ctx.fillStyle = "#d4a373"; ctx.fillText("Perfectly dialed via Espresso Precision Counselor on " + now.toISOString().slice(0, 10), 50, 350);
-
-      // THE MOBILE FIX: Blob conversion + Object URL
       c.toBlob((blob) => {
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
         link.download = `${data.roaster.replace(/\s+/g, '_')}_${data.beans.replace(/\s+/g, '_')}_${stamp}.png`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        document.body.appendChild(link); link.click(); document.body.removeChild(link);
         setTimeout(() => URL.revokeObjectURL(url), 100);
       }, 'image/png');
-
-
     };
+
+    const bgImg = new Image();
+    bgImg.onload = () => drawAndDownload(bgImg);
+    bgImg.onerror = () => drawAndDownload(null); // Fallback to text-only if path is broken
+
+    if (imageInput.files && imageInput.files[0]) {
+      const reader = new FileReader();
+      reader.onload = (e) => { bgImg.src = e.target.result; };
+      reader.readAsDataURL(imageInput.files[0]);
+    } else {
+      bgImg.src = '/assets/images/coffee-fixer.png';
+    }
   }
 
   function saveToStorage() {
@@ -671,13 +647,10 @@ layout: default
   }
 
   function resetAll() { if (confirm("Wipe all brewing data?")) { localStorage.removeItem('espressoLabData'); window.location.reload(); } }
-
   ids.forEach(id => {
     document.getElementById('v-' + id).addEventListener('input', (e) => sync(id, e.target.value, true));
     document.getElementById('n-' + id).addEventListener('input', (e) => sync(id, e.target.value, false));
   });
-
-  function toggleHelp() { const guide = document.getElementById('taste-guide'); guide.style.display = guide.style.display === 'none' ? 'block' : 'none'; }
   window.onload = loadFromStorage;
   {% endraw %}
 </script>
