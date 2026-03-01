@@ -24,11 +24,6 @@ layout: default
     <div class="lab-panel-stack">
       <div class="lab-panel">
         <span class="panel-h">Coffee Identity</span>
-
-        <div class="control-row">
-          <label class="section-label-tiny">Recipe Card Image (Logo/Beans)</label>
-          <input type="file" id="recipe-image-input" class="name-input" accept="image/*">
-        </div>
         <div class="control-row">
           <label class="section-label-tiny">Coffee Roaster</label>
           <input type="text" id="roaster-name" class="name-input" placeholder="e.g. Onyx Coffee Lab"
@@ -496,7 +491,7 @@ layout: default
     isCalibrated = true;
     const currentEY = calculateEY();
     const now = new Date();
-    const ts = now.toLocaleDateString([], { day: '2-digit', month: 'short' }) + " " + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+    const ts = now.toISOString().slice(0, 10) + " " + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
     const roaster = document.getElementById('roaster-name').value || "Unknown";
     const beans = document.getElementById('beans-name').value || "Beans";
     const grind = document.getElementById('grinder-setting').value || "--";
@@ -580,22 +575,16 @@ layout: default
     const data = JSON.parse(jsonData);
     const c = document.getElementById('recipe-canvas');
     const ctx = c.getContext('2d');
-    const imageInput = document.getElementById('recipe-image-input');
     const now = new Date();
     const stamp = now.toISOString().slice(0, 10).replace(/-/g, '');
 
-    const drawCard = (uploadedImage = null) => {
+    const drawCard = () => {
       // Background & Border
       ctx.fillStyle = "#2c1e1a";
       ctx.fillRect(0, 0, 600, 400);
       ctx.strokeStyle = "#d4a373";
       ctx.lineWidth = 10;
       ctx.strokeRect(20, 20, 560, 360);
-
-      // If an image was uploaded, place it in the top right
-      if (uploadedImage) {
-        ctx.drawImage(uploadedImage, 430, 45, 120, 120); // (img, x, y, width, height)
-      }
 
       // Header Text
       ctx.fillStyle = "#d4a373";
@@ -632,33 +621,8 @@ layout: default
       link.click();
     };
 
-    // Handle image loading asynchronously
-    if (imageInput.files && imageInput.files[0]) {
-      const reader = new FileReader();
-      reader.onload = function (event) {
-        const img = new Image();
-        img.onload = () => drawCard(img);
-        img.src = event.target.result;
-      };
-      reader.readAsDataURL(imageInput.files[0]);
-    } else {
-      drawCard(); // Export without image if none selected
-    }
+    drawCard(); // Export without image if none selected
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   function saveToStorage() {
     if (appLoading) return;
