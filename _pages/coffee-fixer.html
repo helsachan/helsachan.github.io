@@ -49,7 +49,7 @@ layout: default
         </div>
         <div class="control-row">
           <div class="label-wrap"><label>Dose</label><span><input type="number" step="0.2" class="val-input" id="n-dose"
-                value="18.0"> <b>g</b></span></div>
+                value="18"> <b>g</b></span></div>
           <div class="slider-container">
             <input type="range" id="v-dose" min="17" max="25" step="0.2" value="18">
             <div class="marker" id="m-dose"></div>
@@ -57,7 +57,7 @@ layout: default
         </div>
         <div class="control-row">
           <div class="label-wrap"><label>Yield</label><span><input type="number" step="0.5" class="val-input"
-                id="n-yield" value="36.0"> <b>g</b></span></div>
+                id="n-yield" value="36"> <b>g</b></span></div>
           <div class="slider-container">
             <input type="range" id="v-yield" min="15" max="65" step="0.5" value="36">
             <div class="marker" id="m-yield"></div>
@@ -123,14 +123,6 @@ layout: default
     </div>
   </div>
 
-  <div id="taste-guide" class="help-content" style="display:none;">
-    <h4 style="margin:0 0 10px 0; border:none; font-size: 0.8rem;">The 1–9 Sensory Guide</h4>
-    <div class="guide-grid">
-      <div style="font-size: 0.6rem;"><strong>Taste (T):</strong> 1-3 is Sour. 5 is Balanced. 7-9 is Bitter.</div>
-      <div style="font-size: 0.6rem;"><strong>Body (B):</strong> 1-3 is Watery. 5 is Creamy. 7-9 is Syrupy.</div>
-    </div>
-  </div>
-
   <div class="table-scroll">
     <table class="history-table" id="shot-history">
       <thead>
@@ -143,7 +135,7 @@ layout: default
           <th>Temp</th>
           <th>Time</th>
           <th>EY%</th>
-          <th><button class="help-toggle-btn" onclick="toggleHelp()">Sensory</button></th>
+          <th>Sensory</th>
           <th style="width:100px;"></th>
         </tr>
       </thead>
@@ -650,8 +642,6 @@ layout: default
     if (isCalibrated) document.getElementById('cal-btn').innerText = "UPDATE SHOT & RE-CALIBRATE";
     updateLogic(); setTimeout(() => { appLoading = false; }, 100);
   }
-
-  function toggleHelp() { const guide = document.getElementById('taste-guide'); guide.style.display = guide.style.display === 'none' ? 'block' : 'none'; }
 
   function resetAll() { if (confirm("Wipe all brewing data?")) { localStorage.removeItem('espressoLabData'); window.location.reload(); } }
   ids.forEach(id => {
