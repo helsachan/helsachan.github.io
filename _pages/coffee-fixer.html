@@ -614,12 +614,30 @@ layout: default
       // Footer
       ctx.font = "italic 16px sans-serif"; ctx.fillStyle = "#d4a373"; ctx.fillText("Perfectly dialed via Espresso Precision Counselor on " + now.toISOString().slice(0, 10), 50, 350);
 
-      // Trigger Download
-      let link = document.createElement('a');
-      link.download = `${data.roaster.replace(/\s+/g, '_')}_${data.beans.replace(/\s+/g, '_')}_${stamp}.png`;
-      link.href = c.toDataURL();
-      link.click();
+      // THE MOBILE FIX: Blob conversion + Object URL
+      c.toBlob((blob) => {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${data.roaster.replace(/\s+/g, '_')}_${data.beans.replace(/\s+/g, '_')}_${stamp}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(url), 100);
+      }, 'image/png');
+
+
+
+
+
+
+
+
+
+
     };
+
+
 
     drawCard(); // Export without image if none selected
   }
