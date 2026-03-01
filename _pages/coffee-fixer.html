@@ -4,123 +4,128 @@ layout: default
 ---
 
 <div id="espresso-app-wrapper">
-  <div style="text-align:center; margin-bottom:20px;">
-    <h2 style="margin:0; border:none;">Espresso Precision Counselor</h2>
-    <div class="instructions-box">
-      <strong>How to use: </strong>Set your current dose, yield, and time. Adjust the <strong>Sensory</strong> sliders
-      to match what you tasted. Click <strong>Log & Calibrate</strong> to see specific adjustment targets for your
-      next
-      shot.
-
+  <div style="text-align:center; min-height: 90px; margin-bottom: 20px;">
+    <h2 style="margin:0; border:none; font-weight: 800;">Espresso Precision Counselor</h2>
+    <div id="rotating-instructions" class="instructions-box">
+      How to use: Set variables and calibrate to mark your baseline.
     </div>
-
     <button class="help-toggle-btn" onclick="toggleHelp()">? View Taste Scale Guide</button>
-    <br>
-    <br>
-
-    <div style="size:7pt"><strong>Heads up: </strong> This tool is a guide, not a law. Since every machine and bean is
-      different, use these
-      suggestions
-      as a
-      starting point, not gospel. Brew at your own risk, watch out for hot water, and don't blame me if you "choke"
-      your
-      grinder. Happy dialing!</div>
   </div>
 
   <div id="taste-guide" class="help-content" style="display:none;">
-    <h4 style="margin:0; border:none;">The 1–9 Taste Scale Guide</h4>
+    <h4 style="margin:0 0 10px 0; border:none; font-size: 0.9rem;">The 1–9 Sensory Guide</h4>
     <div class="guide-grid">
-      <div><strong>1–3 (Under):</strong> Salty, sour, thin, sharpness.</div>
-      <div><strong>4–5 (Balanced):</strong> 5 is the Sweet Spot. 4 is bright/fruity.</div>
-      <div><strong>6–9 (Over):</strong> 6 is dry. 7+ is bitter, ashy, and burnt.</div>
+      <div><strong>Flavor:</strong> 1-3 is Sour. 5 is Balanced. 7-9 is Bitter.</div>
+      <div><strong>Mouthfeel:</strong> 1-3 is Watery. 5 is Creamy. 7-9 is Syrupy.</div>
     </div>
   </div>
 
   <div class="lab-grid">
-    <div class="lab-panel">
-      <span class="panel-h">Physical Recipe</span>
-      <div class="roast-toggle">
-        <button class="roast-btn" onclick="setRoast('light', this)">Light</button>
-        <button class="roast-btn active" onclick="setRoast('medium', this)">Medium</button>
-        <button class="roast-btn" onclick="setRoast('dark', this)">Dark</button>
-      </div>
-
-      <div class="control-row">
-        <div class="label-wrap"><label>Dose</label><span><input type="number" step="0.2" class="val-input" id="n-dose"
-              value="18.0"> g</span></div>
-        <div class="slider-container">
-          <input type="range" id="v-dose" min="17" max="25" step="0.2" value="18">
-          <div class="marker" id="m-dose"></div>
+    <div class="lab-panel-stack">
+      <div class="lab-panel">
+        <span class="panel-h">Coffee Identity</span>
+        <div class="control-row">
+          <label class="section-label-tiny">Coffee Roaster</label>
+          <input type="text" id="roaster-name" class="name-input" placeholder="e.g. Onyx Coffee Lab"
+            oninput="saveToStorage()">
         </div>
-      </div>
-
-      <div class="control-row">
-        <div class="label-wrap"><label>Yield</label><span><input type="number" step="0.5" class="val-input" id="n-yield"
-              value="36.0"> g</span></div>
-        <div class="slider-container">
-          <input type="range" id="v-yield" min="15" max="65" step="0.5" value="36">
-          <div class="marker" id="m-yield"></div>
+        <div class="control-row">
+          <label class="section-label-tiny">Beans Name</label>
+          <input type="text" id="beans-name" class="name-input" placeholder="e.g. Geometry Blend"
+            oninput="saveToStorage()">
         </div>
-      </div>
-
-      <div class="control-row">
-        <div class="label-wrap"><label>Shot Time</label><span><input type="number" class="val-input" id="n-time"
-              value="28"> s</span></div>
-        <div class="slider-container">
-          <input type="range" id="v-time" min="10" max="60" step="1" value="28">
-          <div class="marker" id="m-time"></div>
-        </div>
-      </div>
-
-      <div class="control-row">
-        <div class="label-wrap"><label>Water Temp</label><span><input type="number" class="val-input" id="n-temp"
-              value="93"> °C</span></div>
-        <div class="slider-container">
-          <input type="range" id="v-temp" min="85" max="98" step="1" value="93">
-          <div class="marker" id="m-temp"></div>
+        <div class="control-row">
+          <label class="section-label-tiny">Roast Level</label>
+          <div class="roast-toggle">
+            <button class="roast-btn" onclick="setRoast('light', this)">Light</button>
+            <button class="roast-btn active" onclick="setRoast('medium', this)">Med</button>
+            <button class="roast-btn" onclick="setRoast('dark', this)">Dark</button>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="lab-panel">
-      <span class="panel-h">Sensory Feedback</span>
-      <div class="control-row">
-        <div class="label-wrap"><label>Flavor (Extraction)</label><input type="number" class="val-input" id="n-taste"
-            value="5"></div>
-        <div class="range-labels"><span>Sour</span><span>Balanced</span><span>Bitter</span></div>
-        <div class="slider-container">
-          <input type="range" id="v-taste" min="1" max="9" step="1" value="5">
-          <div class="marker" id="m-taste"></div>
+    <div class="lab-panel-stack">
+      <div class="lab-panel">
+        <span class="panel-h">Physical Recipe</span>
+        <div class="control-row">
+          <label class="section-label-tiny">Grinder Setting</label>
+          <input type="text" id="grinder-setting" class="name-input" placeholder="e.g. 1.4" oninput="saveToStorage()">
+        </div>
+        <div class="control-row">
+          <div class="label-wrap"><label>Dose</label><span><input type="number" step="0.2" class="val-input" id="n-dose"
+                value="18.0"> <b>g</b></span></div>
+          <div class="slider-container">
+            <input type="range" id="v-dose" min="17" max="25" step="0.2" value="18">
+            <div class="marker" id="m-dose"></div>
+          </div>
+        </div>
+        <div class="control-row">
+          <div class="label-wrap"><label>Yield</label><span><input type="number" step="0.5" class="val-input"
+                id="n-yield" value="36.0"> <b>g</b></span></div>
+          <div class="slider-container">
+            <input type="range" id="v-yield" min="15" max="65" step="0.5" value="36">
+            <div class="marker" id="m-yield"></div>
+          </div>
+        </div>
+        <div class="control-row">
+          <div class="label-wrap"><label>Shot Time</label><span><input type="number" class="val-input" id="n-time"
+                value="28"> <b>s</b></span></div>
+          <div class="slider-container">
+            <input type="range" id="v-time" min="10" max="60" step="1" value="28">
+            <div class="marker" id="m-time"></div>
+          </div>
+        </div>
+        <div class="control-row">
+          <div class="label-wrap"><label>Water Temp</label><span><input type="number" class="val-input" id="n-temp"
+                value="93"> <b>°C</b></span></div>
+          <div class="slider-container">
+            <input type="range" id="v-temp" min="85" max="98" step="1" value="93">
+            <div class="marker" id="m-temp"></div>
+          </div>
         </div>
       </div>
+    </div>
 
-      <div class="control-row">
-        <div class="label-wrap"><label>Mouthfeel (Texture)</label><input type="number" class="val-input" id="n-body"
-            value="5"></div>
-        <div class="range-labels"><span>Watery</span><span>Creamy</span><span>Syrupy</span></div>
-        <div class="slider-container">
-          <input type="range" id="v-body" min="1" max="9" step="1" value="5">
-          <div class="marker" id="m-body"></div>
+    <div class="lab-panel-stack">
+      <div class="lab-panel">
+        <span class="panel-h">Sensory Feedback</span>
+        <div class="control-row">
+          <div class="label-wrap"><label>Flavor Balance</label><input type="number" class="val-input" id="n-taste"
+              value="5"></div>
+          <div class="range-labels"><span>Sour</span><span>Balanced</span><span>Bitter</span></div>
+          <div class="slider-container">
+            <input type="range" id="v-taste" min="1" max="9" step="1" value="5">
+            <div class="marker" id="m-taste"></div>
+          </div>
+        </div>
+        <div class="control-row" style="margin-bottom: 25px;">
+          <div class="label-wrap"><label>Mouthfeel (Body)</label><input type="number" class="val-input" id="n-body"
+              value="5"></div>
+          <div class="range-labels"><span>Watery</span><span>Creamy</span><span>Syrupy</span></div>
+          <div class="slider-container">
+            <input type="range" id="v-body" min="1" max="9" step="1" value="5">
+            <div class="marker" id="m-body"></div>
+          </div>
         </div>
       </div>
-
-      <div style="margin-top: 40px;">
+      <div class="lab-panel" style="background: none; border: none; padding: 0;">
         <button class="main-action-btn" id="cal-btn" onclick="calibrate()">LOG SHOT & CALIBRATE</button>
       </div>
     </div>
   </div>
 
   <div class="diag-box" id="diagnosis-container">
-    <div id="diag-msg" style="font-weight: bold; font-size: 1.1rem;">Awaiting Baseline...</div>
-    <div class="target-card">
-      <h4 style="border:none; margin:0 0 8px 0; color:var(--goldcol); font-size:0.75rem; text-transform:uppercase;">
+    <div id="diag-msg" style="font-weight: bold; font-size: 1.1rem; margin-bottom: 10px;">Awaiting Baseline...</div>
+    <div class="target-card" style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px;">
+      <h4 style="border:none; margin:0 0 5px 0; color:var(--goldcol); font-size:0.7rem; text-transform:uppercase;">
         Correction Plan</h4>
-      <div id="target-text" style="font-size: 0.85rem;">Input shot metrics and calibrate to see targets.</div>
+      <div id="target-text" style="font-size: 0.85rem; opacity: 0.9;">Input metrics and calibrate baseline.</div>
     </div>
-    <div class="stats-strip">
-      <span>RATIO: <span class="stat-val" id="stat-ratio">1:2.0</span></span>
-      <span>FLOW: <span class="stat-val" id="stat-flow">--</span></span>
-      <span>EST. EY: <span class="stat-val" id="stat-ey">--</span></span>
+    <div class="stats-strip"
+      style="margin-top: 15px; display: flex; gap: 20px; font-size: 0.75rem; font-weight: bold; color: var(--goldcol);">
+      <span>RATIO: <span id="stat-ratio">1:2.0</span></span>
+      <span>EST. EY: <span id="stat-ey">--</span></span>
     </div>
   </div>
 
@@ -128,13 +133,16 @@ layout: default
     <table class="history-table" id="shot-history">
       <thead>
         <tr>
-          <th style="width:200px;">Date / Time</th>
+          <th>Date</th>
+          <th>Identity</th>
           <th>Roast</th>
-          <th>Recipe</th>
+          <th>Grind</th>
+          <th>D/Y</th>
+          <th>Temp</th>
           <th>Time</th>
           <th>EY%</th>
-          <th>Taste</th>
-          <th style="width:30px;"></th>
+          <th>Sensory</th>
+          <th style="width:80px;"></th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -142,9 +150,16 @@ layout: default
   </div>
 
   <div class="footer-actions">
-    <button class="btn-reset" onclick="resetAll()">Clear All Data</button>
+    <div class="disclaimer-text"><strong>Heads up:</strong> Latest 15 shots only.</div>
+    <div style="display:flex; gap:10px;">
+      <button class="btn-reset" onclick="exportCSV()"
+        style="border-color: var(--accentcol); color: var(--accentcol);">Download CSV</button>
+      <button class="btn-reset" onclick="resetAll()">Clear All Data</button>
+    </div>
   </div>
 </div>
+
+<canvas id="recipe-canvas" width="600" height="400" style="display:none;"></canvas>
 
 <style>
   #espresso-app-wrapper {
@@ -153,17 +168,11 @@ layout: default
     --goldcol: #d4a373;
     --danger: #ff4d4d;
     width: 100%;
-    max-width: 60%;
+    max-width: 65%;
     margin: 2rem auto;
     font-size: 0.85rem;
-    line-height: 1.5;
-  }
-
-  @media (max-width: 1024px) {
-    #espresso-app-wrapper {
-      max-width: 100%;
-      padding: 0 15px;
-    }
+    line-height: 1.4;
+    color: #333;
   }
 
   #espresso-app-wrapper * {
@@ -173,11 +182,15 @@ layout: default
   #espresso-app-wrapper .instructions-box {
     background: #fdf6ed;
     border: 1px solid #faead1;
-    padding: 12px;
+    padding: 10px;
     border-radius: 8px;
     margin: 15px 0;
     font-size: 0.8rem;
     color: #5d4037;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   #espresso-app-wrapper .help-toggle-btn {
@@ -195,26 +208,19 @@ layout: default
     border: 1px solid #eee;
     padding: 15px;
     border-radius: 12px;
-    margin-bottom: 25px;
-    text-align: left;
-  }
-
-  #espresso-app-wrapper .guide-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 10px;
-    font-size: 0.75rem;
-    margin-top: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   }
 
   #espresso-app-wrapper .lab-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 25px;
-    margin-bottom: 30px;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 25px;
+    align-items: start;
   }
 
-  @media (max-width: 850px) {
+  @media (max-width: 950px) {
     #espresso-app-wrapper .lab-grid {
       grid-template-columns: 1fr;
     }
@@ -222,22 +228,43 @@ layout: default
 
   #espresso-app-wrapper .lab-panel {
     border: 1px solid #eee;
-    padding: 20px;
+    padding: 18px;
     border-radius: 12px;
     background: rgba(0, 0, 0, 0.02);
   }
 
   #espresso-app-wrapper .panel-h {
-    font-weight: 800;
-    font-size: 0.7rem;
+    font-weight: 900;
+    font-size: 0.65rem;
     text-transform: uppercase;
-    color: #bbb;
+    color: #999;
     display: block;
     margin-bottom: 15px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 5px;
+  }
+
+  #espresso-app-wrapper .name-input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    margin-bottom: 5px;
+    background: white;
+  }
+
+  #espresso-app-wrapper .section-label-tiny {
+    font-weight: 800;
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    color: #777;
+    margin-bottom: 4px;
+    display: block;
   }
 
   #espresso-app-wrapper .control-row {
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     position: relative;
   }
 
@@ -245,23 +272,20 @@ layout: default
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
   }
 
   #espresso-app-wrapper .label-wrap label {
-    font-weight: 700;
-    font-size: 0.85rem;
-    margin: 0;
+    font-weight: 800;
   }
 
   #espresso-app-wrapper .val-input {
-    width: 75px;
-    padding: 5px;
+    width: 65px;
+    padding: 4px;
     border: 2px solid #ddd;
     border-radius: 6px;
     text-align: center;
     font-weight: 800;
-    font-size: 1rem;
     color: var(--accentcol);
     background: white;
   }
@@ -269,7 +293,7 @@ layout: default
   #espresso-app-wrapper .slider-container {
     position: relative;
     width: 100%;
-    height: 30px;
+    height: 32px;
     display: flex;
     align-items: center;
   }
@@ -283,6 +307,7 @@ layout: default
     outline: none;
     margin: 0;
     padding: 0;
+    border: none;
     z-index: 2;
     position: relative;
     cursor: pointer;
@@ -311,8 +336,9 @@ layout: default
     border-radius: 50%;
     display: none;
     pointer-events: none;
-    box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
-    filter: blur(2px);
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+    filter: blur(1.5px);
+    opacity: 0.7;
   }
 
   #espresso-app-wrapper .diag-box {
@@ -321,157 +347,125 @@ layout: default
     padding: 20px;
     border-radius: 12px;
     border-left: 8px solid var(--goldcol);
-    transition: 0.3s;
-  }
-
-  #espresso-app-wrapper .diag-box.ey-warning {
-    border-left-color: var(--danger);
-    outline: 2px solid var(--danger);
-    animation: pulse-red 2s infinite;
-  }
-
-  @keyframes pulse-red {
-    0% {
-      box-shadow: 0 0 0 0 rgba(255, 77, 77, 0.4);
-    }
-
-    70% {
-      box-shadow: 0 0 0 10px rgba(255, 77, 77, 0);
-    }
-
-    100% {
-      box-shadow: 0 0 0 0 rgba(255, 77, 77, 0);
-    }
-  }
-
-  #espresso-app-wrapper .target-card {
-    background: rgba(255, 255, 255, 0.08);
-    padding: 12px;
-    border-radius: 8px;
-    margin-top: 15px;
-  }
-
-  #espresso-app-wrapper .stats-strip {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 15px;
-    font-family: monospace;
-    font-size: 0.7rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    padding-top: 10px;
-  }
-
-  #espresso-app-wrapper .stat-val {
-    color: var(--goldcol);
-    font-weight: bold;
-  }
-
-  #espresso-app-wrapper .table-scroll {
-    overflow-x: auto;
-    margin-top: 25px;
+    margin-bottom: 25px;
   }
 
   #espresso-app-wrapper .history-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.75rem;
+    font-size: 0.62rem;
+    margin-top: 20px;
   }
 
   #espresso-app-wrapper .history-table th {
     border-bottom: 2px solid #eee;
     text-align: left;
-    padding: 8px;
+    padding: 10px 8px;
     color: #888;
-    white-space: nowrap;
+    text-transform: uppercase;
   }
 
   #espresso-app-wrapper .history-table td {
-    padding: 8px;
-    border-bottom: 1px solid #f9f9f9;
+    padding: 10px 8px;
+    border-bottom: 1px solid #f2f2f2;
   }
 
   #espresso-app-wrapper .main-action-btn {
-    background: var(--accentcol);
     color: white;
     border: none;
-    padding: 12px;
+    padding: 15px;
     width: 100%;
     border-radius: 8px;
-    font-weight: bold;
+    font-weight: 800;
     cursor: pointer;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
+    background: var(--accentcol);
+    box-shadow: 0 4px 0 #8d6945;
+    transition: transform 0.1s;
+  }
+
+  #espresso-app-wrapper .btn-delete-row,
+  #espresso-app-wrapper .btn-save-row {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    padding: 0 5px;
+  }
+
+  #espresso-app-wrapper .btn-delete-row {
+    color: #ddd;
+    font-size: 1.2rem;
+  }
+
+  #espresso-app-wrapper .btn-save-row {
+    color: var(--goldcol);
+    font-size: 1rem;
+  }
+
+  #espresso-app-wrapper .roast-toggle {
+    display: flex;
+    gap: 4px;
+  }
+
+  #espresso-app-wrapper .roast-btn {
+    flex: 1;
+    padding: 7px;
+    border: 1px solid #ddd;
+    background: white;
+    border-radius: 6px;
+    font-weight: 800;
+    font-size: 0.7rem;
+    cursor: pointer;
+  }
+
+  #espresso-app-wrapper .roast-btn.active {
+    background: var(--coffeecol);
+    color: white;
+    border-color: var(--coffeecol);
+  }
+
+  /* THE FIX: Labeled Labels */
+  #espresso-app-wrapper .range-labels {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0 5px;
+    font-size: 0.6rem;
+    color: #aaa;
+    margin-bottom: -5px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  #espresso-app-wrapper .footer-actions {
+    margin-top: 30px;
+    border-top: 1px solid #eee;
+    padding-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 
   #espresso-app-wrapper .btn-reset {
     background: none;
     border: 1px solid #ddd;
     color: #999;
-    padding: 5px 10px;
-    border-radius: 4px;
+    padding: 6px 12px;
+    border-radius: 6px;
     cursor: pointer;
-    font-size: 0.65rem;
-  }
-
-  #espresso-app-wrapper .btn-delete-row {
-    background: none;
-    border: none;
-    color: #ccc;
-    cursor: pointer;
+    font-size: 0.7rem;
     font-weight: bold;
-    font-size: 1.1rem;
-    padding: 0 5px;
-  }
-
-  #espresso-app-wrapper .btn-delete-row:hover {
-    color: var(--danger);
-  }
-
-  #espresso-app-wrapper .range-labels {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.55rem;
-    color: #999;
-  }
-
-  #espresso-app-wrapper .roast-toggle {
-    display: flex;
-    gap: 5px;
-    margin-bottom: 20px;
-  }
-
-  #espresso-app-wrapper .roast-btn {
-    flex: 1;
-    padding: 8px;
-    border: 1px solid #ddd;
-    background: white;
-    cursor: pointer;
-    border-radius: 4px;
-    font-weight: bold;
-    font-size: 0.75rem;
-  }
-
-  #espresso-app-wrapper .roast-btn.active {
-    background: var(--coffeecol);
-    color: white;
-  }
-
-  #espresso-app-wrapper .footer-actions {
-    text-align: right;
-    margin-top: 20px;
   }
 </style>
 
 <script>
   {% raw %}
-  let isCalibrated = false; let roast = 'medium';
+  let isCalibrated = false; let roast = 'medium'; let appLoading = true;
   let base = { dose: 18, yield: 36, time: 28, temp: 93, taste: 5, body: 5, ey: 20 };
   const ids = ['dose', 'yield', 'time', 'temp', 'taste', 'body'];
-  const THUMB_WIDTH = 18; // Must match CSS
-
-  function toggleHelp() {
-    const guide = document.getElementById('taste-guide');
-    guide.style.display = guide.style.display === 'none' ? 'block' : 'none';
-  }
+  const THUMB_WIDTH = 18;
 
   function setRoast(type, btn) {
     roast = type; document.querySelectorAll('.roast-btn').forEach(b => b.classList.remove('active'));
@@ -479,52 +473,56 @@ layout: default
   }
 
   function sync(id, val, isSlider) {
-    val = parseFloat(val); if (isSlider) document.getElementById('n-' + id).value = val;
-    else document.getElementById('v-' + id).value = val;
+    val = parseFloat(val);
+    if (isSlider) {
+      document.getElementById('n-' + id).value = val;
+    } else {
+      const slider = document.getElementById('v-' + id);
+      if (val < slider.min) val = slider.min; if (val > slider.max) val = slider.max;
+      slider.value = val;
+    }
     updateLogic(); saveToStorage();
   }
 
-  // New Helper to calculate precise left position with thumb offset
-  function getMarkerLeft(percent) {
-    // Formula: left = (percent * (trackWidth - thumbWidth) / 100) + (thumbWidth / 2)
-    // We use CSS calc to make it reactive to container resizing
-    return `calc((${percent} * (100% - ${THUMB_WIDTH}px) / 100) + (${THUMB_WIDTH / 2}px))`;
-  }
+  function getMarkerLeft(percent) { return `calc((${percent} * (100% - ${THUMB_WIDTH}px) / 100) + (${THUMB_WIDTH / 2}px))`; }
 
   function calibrate() {
     isCalibrated = true;
     const currentEY = calculateEY();
     const now = new Date();
-    const timestamp = now.toLocaleDateString([], { day: '2-digit', month: '2-digit', year: 'numeric' }) + ", " +
-      now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+    const ts = now.toLocaleDateString([], { day: '2-digit', month: 'short' }) + " " + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+    const roaster = document.getElementById('roaster-name').value || "Unknown";
+    const beans = document.getElementById('beans-name').value || "Beans";
+    const grind = document.getElementById('grinder-setting').value || "--";
 
     ids.forEach(id => {
       const slider = document.getElementById('v-' + id);
-      base[id] = parseFloat(slider.value);
+      const val = parseFloat(slider.value);
+      base[id] = val;
+      document.getElementById('n-' + id).value = val;
       const marker = document.getElementById('m-' + id);
-      const percent = (base[id] - slider.min) / (slider.max - slider.min) * 100;
-
+      const percent = (val - slider.min) / (slider.max - slider.min) * 100;
       marker.style.left = getMarkerLeft(percent);
       marker.style.display = "block";
     });
 
-    base.ey = currentEY;
-    addHistoryRow(timestamp, roast, base.dose, base.yield, base.time, currentEY, base.taste);
+    addHistoryRow(ts, roaster, beans, roast, grind, base.dose, base.yield, base.time, base.temp, currentEY, parseInt(document.getElementById('v-taste').value), parseInt(document.getElementById('v-body').value));
     document.getElementById('cal-btn').innerText = "UPDATE SHOT & RE-CALIBRATE";
     updateLogic(); saveToStorage();
   }
 
-  function addHistoryRow(timeStr, rst, dose, yield, time, ey, taste) {
+  function addHistoryRow(timeStr, roaster, beans, rst, grind, dose, yield, time, temp, ey, taste, body) {
     const tbody = document.querySelector('#shot-history tbody');
     const row = tbody.insertRow(0);
-    row.innerHTML = `<td style="white-space:nowrap">${timeStr}</td><td>${rst}</td><td>${dose}/${yield}</td><td>${time}s</td><td>${ey}%</td><td>${taste}/9</td><td><button class="btn-delete-row" onclick="removeRow(this)">×</button></td>`;
+    const isGolden = (taste === 5 && body === 5);
+    const shotData = JSON.stringify({ roaster, beans, rst, grind, dose, yield, time, temp, ey }).replace(/"/g, '&quot;');
+    const saveBtn = isGolden ? `<button class="btn-save-row" onclick="exportRecipePNG('${shotData}')">📸</button>` : '';
+    row.innerHTML = `<td>${timeStr}</td><td>${roaster} / ${beans}</td><td>${rst.toUpperCase()}</td><td>${grind}</td><td>${dose}/${yield}</td><td>${temp}°</td><td>${time}s</td><td>${ey}%</td><td>T:${taste} B:${body}</td><td>${saveBtn}<button class="btn-delete-row" onclick="removeRow(this)">×</button></td>`;
+    pruneHistory();
   }
 
-  function removeRow(btn) {
-    let row = btn.parentNode.parentNode;
-    row.parentNode.removeChild(row);
-    saveToStorage();
-  }
+  function pruneHistory() { const tbody = document.querySelector('#shot-history tbody'); while (tbody.rows.length > 15) { tbody.deleteRow(tbody.rows.length - 1); } }
+  function removeRow(btn) { if (confirm("Remove this shot?")) { btn.closest('tr').remove(); saveToStorage(); } }
 
   function calculateEY() {
     const d = parseFloat(document.getElementById('v-dose').value), y = parseFloat(document.getElementById('v-yield').value), t = parseFloat(document.getElementById('v-time').value), temp = parseFloat(document.getElementById('v-temp').value);
@@ -536,57 +534,70 @@ layout: default
 
   function updateLogic() {
     const d = parseFloat(document.getElementById('v-dose').value), y = parseFloat(document.getElementById('v-yield').value), t = parseFloat(document.getElementById('v-time').value), temp = parseFloat(document.getElementById('v-temp').value), taste = parseInt(document.getElementById('v-taste').value), body = parseInt(document.getElementById('v-body').value);
-    const currentEY = calculateEY(), ratio = (y / d).toFixed(2), flow = (y / t).toFixed(2);
+    const currentEY = calculateEY(), ratio = (y / d).toFixed(2);
     document.getElementById('stat-ratio').innerText = `1:${ratio}`;
-    document.getElementById('stat-flow').innerText = `${flow} g/s`;
-    const eyEl = document.getElementById('stat-ey'); eyEl.innerText = `${currentEY}%`;
+    document.getElementById('stat-ey').innerText = `${currentEY}%`;
     const diagBox = document.getElementById('diagnosis-container');
-    if (currentEY > 22.5) { eyEl.className = 'stat-val ey-bad'; diagBox.classList.add('ey-warning'); }
-    else { eyEl.className = 'stat-val'; diagBox.classList.remove('ey-warning'); }
+    if (currentEY > 22.5) diagBox.classList.add('ey-warning'); else diagBox.classList.remove('ey-warning');
 
-    let msg = "", advice = "";
     if (isCalibrated) {
-      let tRatio;
-      if (taste < 5) { tRatio = (roast === 'light' ? 2.5 : (roast === 'medium' ? 2.2 : 2.0)); msg = "🍋 Analysis: UNDER-EXTRACTED (Sour)"; }
-      else if (taste > 5) { tRatio = (roast === 'light' ? 2.0 : (roast === 'medium' ? 1.8 : 1.5)); msg = currentEY > 22.5 ? "💀 Analysis: SEVERE OVER-EXTRACTION" : "🔥 Analysis: OVER-EXTRACTED (Bitter)"; }
+      let msg = "", advice = "";
+      let tRatio = (roast === 'light' ? 2.3 : (roast === 'medium' ? 2.0 : 1.8));
+      if (taste < 5) { tRatio += 0.3; msg = "🍋 Analysis: UNDER-EXTRACTED (Sour)"; }
+      else if (taste > 5) { tRatio -= 0.3; msg = currentEY > 22.5 ? "💀 Analysis: SEVERE OVER-EXTRACTION" : "🔥 Analysis: OVER-EXTRACTED (Bitter)"; }
       else { msg = "✨ Analysis: BALANCED FLAVOR"; }
 
       let textureAdvice = "";
       if (body < 4) textureAdvice = `<br><b>Mouthfeel:</b> Increase Dose to <b>${(d + 0.4).toFixed(1)}g</b>.`;
       else if (body > 6) textureAdvice = `<br><b>Mouthfeel:</b> Decrease Dose to <b>${(d - 0.4).toFixed(1)}g</b>.`;
 
-      let tempAdvice = "";
-      if (taste < 5 && temp < 95) tempAdvice = `<br><b>Thermal:</b> Increase Temp to <b>${Math.min(96, temp + 2)}°C</b>.`;
-      else if (taste > 5 && temp > 90) tempAdvice = `<br><b>Thermal:</b> Decrease Temp to <b>${Math.max(88, temp - 2)}°C</b>.`;
-
       if (taste !== 5) {
         const targetY = (Math.round((d * tRatio) * 2) / 2).toFixed(1);
         const targetT = (taste < 5) ? Math.round(t * 1.2) : Math.round(t * 0.8);
         const yVerb = (targetY > y) ? "Increase" : "Reduce";
         const gVerb = (targetT > t) ? "FINER" : "COARSER";
-        const yieldLine = (Math.abs(targetY - y) < 0.1) ? "" : `<b>Primary Fix:</b> ${yVerb} Yield to <b>${targetY}g</b>.<br>`;
-        advice = `${yieldLine}<b>Secondary Fix:</b> Grind <b>${gVerb}</b> to hit <b>${targetT}s</b>.`;
-      } else { advice = (textureAdvice || tempAdvice) ? "Flavor is dialed." : "Recipe is optimal."; }
-      if (currentEY > 23.5) advice = "<b>EMERGENCY:</b> Extraction is critically high. Coarsen grind immediately.";
-      advice += textureAdvice + tempAdvice;
+        advice = `<b>Primary Fix:</b> ${yVerb} Yield to <b>${targetY}g</b>.<br><b>Secondary:</b> Grind <b>${gVerb}</b> to hit <b>${targetT}s</b>.`;
+      } else { advice = (textureAdvice) ? "Flavor is dialed." : "Recipe is optimal."; }
+      document.getElementById('diag-msg').innerHTML = msg; document.getElementById('target-text').innerHTML = advice + textureAdvice;
     }
-    document.getElementById('diag-msg').innerHTML = msg || "Initial Alignment Mode";
-    document.getElementById('target-text').innerHTML = advice || "Set metrics to see targets.";
+  }
+
+  function exportCSV() {
+    let rows = [["Date", "Identity", "Roast", "Grind", "Recipe", "EY%", "Sensory"]];
+    document.querySelectorAll('#shot-history tbody tr').forEach(tr => { let data = Array.from(tr.cells).slice(0, 9).map(td => td.innerText); rows.push(data); });
+    let csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
+    let link = document.createElement("a"); link.setAttribute("href", encodeURI(csvContent)); link.setAttribute("download", "espresso_history.csv"); document.body.appendChild(link); link.click(); link.remove();
+  }
+
+  function exportRecipePNG(jsonData) {
+    const data = JSON.parse(jsonData); const c = document.getElementById('recipe-canvas'); const ctx = c.getContext('2d');
+    const now = new Date(); const stamp = now.toISOString().slice(0, 10).replace(/-/g, '');
+    ctx.fillStyle = "#2c1e1a"; ctx.fillRect(0, 0, 600, 400);
+    ctx.strokeStyle = "#d4a373"; ctx.lineWidth = 10; ctx.strokeRect(20, 20, 560, 360);
+    ctx.fillStyle = "#d4a373"; ctx.font = "bold 32px sans-serif"; ctx.fillText(data.roaster.toUpperCase(), 50, 75);
+    ctx.fillStyle = "white"; ctx.font = "22px sans-serif"; ctx.fillText(data.beans, 50, 105);
+    ctx.font = "bold 14px sans-serif"; ctx.fillStyle = "#999"; ctx.fillText("GRINDER SETTING", 50, 150);
+    ctx.fillStyle = "white"; ctx.font = "bold 20px sans-serif"; ctx.fillText(data.grind, 50, 175);
+    ctx.font = "bold 20px sans-serif"; ctx.fillStyle = "#999"; ctx.fillText("DOSE", 50, 230); ctx.fillText("YIELD", 180, 230); ctx.fillText("TIME", 310, 230); ctx.fillText("TEMP", 440, 230);
+    ctx.fillStyle = "white"; ctx.font = "bold 36px sans-serif"; ctx.fillText(data.dose + "g", 50, 280); ctx.fillText(data.yield + "g", 180, 280); ctx.fillText(data.time + "s", 310, 280); ctx.fillText(data.temp + "°C", 440, 280);
+    ctx.font = "italic 16px sans-serif"; ctx.fillStyle = "#d4a373"; ctx.fillText("Perfectly dialed via Espresso Precision Counselor on " + now.toISOString().slice(0, 10), 50, 350);
+    let link = document.createElement('a'); link.download = `${data.roaster.replace(/\s+/g, '_')}_${data.beans.replace(/\s+/g, '_')}_${stamp}.png`; link.href = c.toDataURL(); link.click();
   }
 
   function saveToStorage() {
-    const data = { roast, isCalibrated, base, history: document.querySelector('#shot-history tbody').innerHTML, values: {} };
+    if (appLoading) return;
+    const data = { roast, isCalibrated, base, roasterName: document.getElementById('roaster-name').value, beansName: document.getElementById('beans-name').value, grinder: document.getElementById('grinder-setting').value, history: document.querySelector('#shot-history tbody').innerHTML, values: {} };
     ids.forEach(id => data.values[id] = document.getElementById('v-' + id).value);
     localStorage.setItem('espressoLabData', JSON.stringify(data));
   }
 
   function loadFromStorage() {
-    const saved = localStorage.getItem('espressoLabData'); if (!saved) return;
+    appLoading = true; const saved = localStorage.getItem('espressoLabData'); if (!saved) { appLoading = false; return; }
     const data = JSON.parse(saved); roast = data.roast; isCalibrated = data.isCalibrated; base = data.base;
-    const roastBtn = Array.from(document.querySelectorAll('.roast-btn')).find(b => b.innerText.toLowerCase() === roast);
-    if (roastBtn) setRoast(roast, roastBtn);
+    document.getElementById('roaster-name').value = data.roasterName || ""; document.getElementById('beans-name').value = data.beansName || ""; document.getElementById('grinder-setting').value = data.grinder || "";
+    const roastBtn = Array.from(document.querySelectorAll('.roast-btn')).find(b => b.innerText.toLowerCase() === roast); if (roastBtn) setRoast(roast, roastBtn);
     ids.forEach(id => {
-      sync(id, data.values[id], true);
+      const val = data.values[id]; document.getElementById('v-' + id).value = val; document.getElementById('n-' + id).value = val;
       if (isCalibrated) {
         const marker = document.getElementById('m-' + id); const slider = document.getElementById('v-' + id);
         const percent = (base[id] - slider.min) / (slider.max - slider.min) * 100;
@@ -595,19 +606,17 @@ layout: default
     });
     document.querySelector('#shot-history tbody').innerHTML = data.history;
     if (isCalibrated) document.getElementById('cal-btn').innerText = "UPDATE SHOT & RE-CALIBRATE";
-    updateLogic();
+    updateLogic(); setTimeout(() => { appLoading = false; }, 100);
   }
 
-  function resetAll() {
-    if (confirm("Clear all shot history and calibration data?")) {
-      localStorage.removeItem('espressoLabData'); location.reload();
-    }
-  }
+  function resetAll() { if (confirm("Wipe all brewing data?")) { localStorage.removeItem('espressoLabData'); window.location.reload(); } }
 
   ids.forEach(id => {
     document.getElementById('v-' + id).addEventListener('input', (e) => sync(id, e.target.value, true));
     document.getElementById('n-' + id).addEventListener('input', (e) => sync(id, e.target.value, false));
   });
-  window.addEventListener('DOMContentLoaded', loadFromStorage);
+
+  function toggleHelp() { const guide = document.getElementById('taste-guide'); guide.style.display = guide.style.display === 'none' ? 'block' : 'none'; }
+  window.onload = loadFromStorage;
   {% endraw %}
 </script>
