@@ -24,6 +24,11 @@ layout: default
     <div class="lab-panel-stack">
       <div class="lab-panel">
         <span class="panel-h">Coffee Identity</span>
+
+        <div class="control-row">
+          <label class="section-label-tiny">Recipe Card Image (Logo/Beans)</label>
+          <input type="file" id="recipe-image-input" class="name-input" accept="image/*">
+        </div>
         <div class="control-row">
           <label class="section-label-tiny">Coffee Roaster</label>
           <input type="text" id="roaster-name" class="name-input" placeholder="e.g. Onyx Coffee Lab"
@@ -569,20 +574,90 @@ layout: default
     let link = document.createElement("a"); link.setAttribute("href", encodeURI(csvContent)); link.setAttribute("download", "espresso_history.csv"); document.body.appendChild(link); link.click(); link.remove();
   }
 
+
   function exportRecipePNG(jsonData) {
-    const data = JSON.parse(jsonData); const c = document.getElementById('recipe-canvas'); const ctx = c.getContext('2d');
-    const now = new Date(); const stamp = now.toISOString().slice(0, 10).replace(/-/g, '');
-    ctx.fillStyle = "#2c1e1a"; ctx.fillRect(0, 0, 600, 400);
-    ctx.strokeStyle = "#d4a373"; ctx.lineWidth = 10; ctx.strokeRect(20, 20, 560, 360);
-    ctx.fillStyle = "#d4a373"; ctx.font = "bold 32px sans-serif"; ctx.fillText(data.roaster.toUpperCase(), 50, 75);
-    ctx.fillStyle = "white"; ctx.font = "22px sans-serif"; ctx.fillText(data.beans, 50, 105);
-    ctx.font = "bold 14px sans-serif"; ctx.fillStyle = "#999"; ctx.fillText("GRINDER SETTING", 50, 150);
-    ctx.fillStyle = "white"; ctx.font = "bold 20px sans-serif"; ctx.fillText(data.grind, 50, 175);
-    ctx.font = "bold 20px sans-serif"; ctx.fillStyle = "#999"; ctx.fillText("DOSE", 50, 230); ctx.fillText("YIELD", 180, 230); ctx.fillText("TIME", 310, 230); ctx.fillText("TEMP", 440, 230);
-    ctx.fillStyle = "white"; ctx.font = "bold 36px sans-serif"; ctx.fillText(data.dose + "g", 50, 280); ctx.fillText(data.yield + "g", 180, 280); ctx.fillText(data.time + "s", 310, 280); ctx.fillText(data.temp + "°C", 440, 280);
-    ctx.font = "italic 16px sans-serif"; ctx.fillStyle = "#d4a373"; ctx.fillText("Perfectly dialed via Espresso Precision Counselor on " + now.toISOString().slice(0, 10), 50, 350);
-    let link = document.createElement('a'); link.download = `${data.roaster.replace(/\s+/g, '_')}_${data.beans.replace(/\s+/g, '_')}_${stamp}.png`; link.href = c.toDataURL(); link.click();
+    const data = JSON.parse(jsonData);
+    const c = document.getElementById('recipe-canvas');
+    const ctx = c.getContext('2d');
+    const imageInput = document.getElementById('recipe-image-input');
+    const now = new Date();
+    const stamp = now.toISOString().slice(0, 10).replace(/-/g, '');
+
+    const drawCard = (uploadedImage = null) => {
+      // Background & Border
+      ctx.fillStyle = "#2c1e1a";
+      ctx.fillRect(0, 0, 600, 400);
+      ctx.strokeStyle = "#d4a373";
+      ctx.lineWidth = 10;
+      ctx.strokeRect(20, 20, 560, 360);
+
+      // If an image was uploaded, place it in the top right
+      if (uploadedImage) {
+        ctx.drawImage(uploadedImage, 430, 45, 120, 120); // (img, x, y, width, height)
+      }
+
+      // Header Text
+      ctx.fillStyle = "#d4a373";
+      ctx.font = "bold 32px sans-serif";
+      ctx.fillText(data.roaster.toUpperCase(), 50, 75);
+      ctx.fillStyle = "white";
+      ctx.font = "22px sans-serif";
+      ctx.fillText(data.beans, 50, 105);
+
+      // Metadata
+      ctx.font = "bold 14px sans-serif"; ctx.fillStyle = "#999";
+      ctx.fillText("GRINDER SETTING", 50, 150);
+      ctx.fillStyle = "white"; ctx.font = "bold 20px sans-serif";
+      ctx.fillText(data.grind, 50, 175);
+
+      // Recipe Metrics
+      ctx.font = "bold 20px sans-serif"; ctx.fillStyle = "#999";
+      ctx.fillText("DOSE", 50, 230); ctx.fillText("YIELD", 180, 230);
+      ctx.fillText("TIME", 310, 230); ctx.fillText("TEMP", 440, 230);
+
+      ctx.fillStyle = "white"; ctx.font = "bold 36px sans-serif";
+      ctx.fillText(data.dose + "g", 50, 280);
+      ctx.fillText(data.yield + "g", 180, 280);
+      ctx.fillText(data.time + "s", 310, 280);
+      ctx.fillText(data.temp + "°C", 440, 280);
+
+      // Footer
+      ctx.font = "italic 16px sans-serif"; ctx.fillStyle = "#d4a373"; ctx.fillText("Perfectly dialed via Espresso Precision Counselor on " + now.toISOString().slice(0, 10), 50, 350);
+
+      // Trigger Download
+      let link = document.createElement('a');
+      link.download = `${data.roaster.replace(/\s+/g, '_')}_${data.beans.replace(/\s+/g, '_')}_${stamp}.png`;
+      link.href = c.toDataURL();
+      link.click();
+    };
+
+    // Handle image loading asynchronously
+    if (imageInput.files && imageInput.files[0]) {
+      const reader = new FileReader();
+      reader.onload = function (event) {
+        const img = new Image();
+        img.onload = () => drawCard(img);
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(imageInput.files[0]);
+    } else {
+      drawCard(); // Export without image if none selected
+    }
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   function saveToStorage() {
     if (appLoading) return;
