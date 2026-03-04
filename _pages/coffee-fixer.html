@@ -455,7 +455,6 @@ layout: default
   function setRoast(type, btn) {
     roast = type; document.querySelectorAll('.roast-btn').forEach(b => b.classList.remove('active'));
     if (!btn) {
-      // Robust finder to ensure Reuse Button works with abbreviated UI labels
       const mapping = { 'light-med': 'l-med', 'med-dark': 'm-dark', 'medium': 'med' };
       const target = mapping[type] || type;
       btn = Array.from(document.querySelectorAll('.roast-btn')).find(b => b.innerText.toLowerCase() === target);
@@ -588,7 +587,7 @@ layout: default
   }
 
   function exportRecipePNG(jsonData) {
-    const data = JSON.parse(jsonData), c = document.getElementById('recipe-canvas'), ctx = c.getContext('2d'), imgIn = document.getElementById('recipe-image-input'), now = new Date();
+    const data = JSON.parse(jsonData), c = document.getElementById('recipe-canvas'), ctx = c.getContext('2d'), imgIn = document.getElementById('recipe-image-input'), now = new Date(), stamp = now.toISOString().slice(0, 10).replace(/-/g, '');
     ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, c.width, c.height); ctx.scale(2, 2);
     const draw = (img = null) => {
       ctx.fillStyle = "#2c1e1a"; ctx.fillRect(0, 0, 500, 500);
@@ -602,7 +601,7 @@ layout: default
       ctx.font = "bold 16px sans-serif"; ctx.fillStyle = "#999"; ctx.fillText("TIME", 50, 320); ctx.fillText("TEMP", 180, 320); ctx.fillText("BODY", 310, 320);
       ctx.fillStyle = "white"; ctx.font = "bold 32px sans-serif"; ctx.fillText(data.time + "s", 50, 365); ctx.fillText(data.temp + "°", 180, 365); ctx.fillText(data.body, 310, 365);
       ctx.font = "italic 13px sans-serif"; ctx.fillStyle = "#d4a373"; ctx.fillText("Dialed via Espresso Fixer • " + now.toISOString().slice(0, 10), 50, 440);
-      c.toBlob((b) => { const u = URL.createObjectURL(b); const l = document.createElement('a'); l.href = u; l.download = `${data.roaster}_recipe.png`; document.body.appendChild(l); l.click(); document.body.removeChild(l); setTimeout(() => URL.revokeObjectURL(u), 100); }, 'image/png');
+      c.toBlob((b) => { const u = URL.createObjectURL(b); const l = document.createElement('a'); l.href = u; l.download = `${data.roaster.replace(/\s+/g, '_')}_${data.beans.replace(/\s+/g, '_')}_${stamp}.png`; document.body.appendChild(l); l.click(); document.body.removeChild(l); setTimeout(() => URL.revokeObjectURL(u), 100); }, 'image/png');
     };
     const bgImg = new Image(); bgImg.onload = () => draw(bgImg); bgImg.onerror = () => draw(null);
     if (imgIn.files && imgIn.files[0]) { const r = new FileReader(); r.onload = (e) => { bgImg.src = e.target.result; }; r.readAsDataURL(imgIn.files[0]); }
