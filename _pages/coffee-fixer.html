@@ -116,8 +116,7 @@ layout: default
     <div class="target-card" style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px;">
       <h4 style="border:none; margin:0 0 5px 0; color:var(--goldcol); font-size:0.7rem; text-transform:uppercase;">
         Correction Plan</h4>
-      <div id="target-text" style="font-size: 0.85rem; opacity: 0.9;">Input metrics and calibrate baseline to generate
-        analysis.</div>
+      <div id="target-text" style="font-size: 0.85rem; opacity: 0.9;">Input metrics and calibrate baseline.</div>
     </div>
     <div class="stats-strip"
       style="margin-top: 15px; display: flex; gap: 20px; font-size: 0.75rem; font-weight: bold; color: var(--goldcol);">
@@ -139,7 +138,7 @@ layout: default
           <th>Time</th>
           <th>EY%</th>
           <th>Sensory</th>
-          <th style="width:100px;"></th>
+          <th style="width:120px;">Action</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -366,7 +365,8 @@ layout: default
   }
 
   #espresso-app-wrapper .btn-delete-row,
-  #espresso-app-wrapper .btn-save-row {
+  #espresso-app-wrapper .btn-save-row,
+  #espresso-app-wrapper .btn-reuse-row {
     background: none;
     border: none;
     cursor: pointer;
@@ -382,6 +382,11 @@ layout: default
   #espresso-app-wrapper .btn-save-row {
     color: var(--goldcol);
     font-size: 1rem;
+  }
+
+  #espresso-app-wrapper .btn-reuse-row {
+    color: var(--accentcol);
+    font-size: 1.1rem;
   }
 
   #espresso-app-wrapper .roast-toggle {
@@ -449,7 +454,14 @@ layout: default
 
   function setRoast(type, btn) {
     roast = type; document.querySelectorAll('.roast-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active'); updateLogic(); saveToStorage();
+    if (!btn) {
+      // Robust finder to ensure Reuse Button works with abbreviated UI labels
+      const mapping = { 'light-med': 'l-med', 'med-dark': 'm-dark', 'medium': 'med' };
+      const target = mapping[type] || type;
+      btn = Array.from(document.querySelectorAll('.roast-btn')).find(b => b.innerText.toLowerCase() === target);
+    }
+    if (btn) btn.classList.add('active');
+    updateLogic(); saveToStorage();
   }
 
   function sync(id, val, isSlider) {
@@ -480,27 +492,26 @@ layout: default
     const d = parseFloat(document.getElementById('v-dose').value), y = parseFloat(document.getElementById('v-yield').value), t = parseFloat(document.getElementById('v-time').value), temp = parseFloat(document.getElementById('v-temp').value), taste = parseInt(document.getElementById('v-taste').value), body = parseInt(document.getElementById('v-body').value);
     const diagBox = document.getElementById('diagnosis-container'), msgEl = document.getElementById('diag-msg'), targetEl = document.getElementById('target-text');
 
-    // 1. INTEGRITY AUDIT
     const flowRate = y / t;
     if (y < d) { msgEl.innerHTML = "⚠️ INPUT ERROR"; targetEl.innerHTML = "Yield is lower than Dose. Check your scale inputs."; return; }
     if (flowRate > 4.0 && t < 15) { msgEl.innerHTML = "🌊 CRITICAL LEAK"; targetEl.innerHTML = "Flow is too high. Your grind is <b>TOO COARSE</b>. Grind <b>FINER</b> immediately."; diagBox.style.borderLeftColor = "var(--danger)"; return; }
     if (flowRate < 0.3 && t > 45) { msgEl.innerHTML = "🛑 INTEGRITY: CLOGGED"; targetEl.innerHTML = "Flow is nearly stalled. You have 'choked' the machine. Grind <b>COARSER</b> immediately."; diagBox.style.borderLeftColor = "var(--danger)"; return; }
 
-    // 2. STATS
     const currentEY = calculateEY(), ratio = (y / d).toFixed(2);
     document.getElementById('stat-ratio').innerText = `1:${ratio}`;
     document.getElementById('stat-ey').innerText = `${currentEY}%`;
 
-    // 3. ROAST-SPECIFIC TEMP GUARD (FIXED)
     let tempWarn = "";
-    if (roast === 'dark' && temp > 91) tempWarn = `<br><span style="color:#ffcc00">⚠️ <b>TEMP ALERT:</b> Drop Water Temp to 88-90°C for Dark Roast.</span>`;
-    else if (roast === 'med-dark' && temp > 92) tempWarn = `<br><span style="color:#ffcc00">⚠️ <b>TEMP ALERT:</b> Drop Water Temp to 90-91°C for Medium-Dark Roast.</span>`;
+    if (roast === 'dark' && temp > 91) tempWarn = `<br><span style="color:#ffcc00">⚠️ <b>TEMP ALERT:</b> Reduce Water Temp to 88-90°C for Dark Roast.</span>`;
+    else if (roast === 'med-dark' && temp > 92) tempWarn = `<br><span style="color:#ffcc00">⚠️ <b>TEMP ALERT:</b> Reduce Water Temp to 90-91°C for Medium-Dark Roast.</span>`;
+    else if (roast === 'medium' && temp < 91) tempWarn = `<br><span style="color:#ffcc00">⚠️ <b>TEMP ALERT:</b> Increase Water Temp to 91-93°C for Medium Roast.</span>`;
+    else if (roast === 'medium' && temp > 93) tempWarn = `<br><span style="color:#ffcc00">⚠️ <b>TEMP ALERT:</b> Reduce Water Temp to 91-93°C for Medium Roast.</span>`;
     else if (roast === 'light-med' && temp < 92) tempWarn = `<br><span style="color:#ffcc00">⚠️ <b>TEMP ALERT:</b> Increase Water Temp to 93-94°C for Light-Med Roast.</span>`;
     else if (roast === 'light' && temp < 93) tempWarn = `<br><span style="color:#ffcc00">⚠️ <b>TEMP ALERT:</b> Increase Water Temp to 94-96°C for Light Roast.</span>`;
 
     if (!isCalibrated) { msgEl.innerHTML = "Awaiting Baseline..."; return; }
 
-    const tDist = Math.abs(taste - 5);
+    const tDist = Math.abs(taste - 5), bDist = Math.abs(body - 5);
     let msg = "", advice = "", color = "var(--goldcol)";
     const getDir = (target, actual, label) => { const verb = target > actual ? "Increase" : "Reduce"; return `<b>${verb} ${label}</b> to <b>${target}g</b>`; };
 
@@ -508,26 +519,14 @@ layout: default
     if (taste < 4) idealR += 0.3; if (taste > 6) idealR -= 0.3;
     const targetY = (d * idealR).toFixed(1);
 
-    // --- SENSORY-STRICT DIAGNOSTIC ENGINE ---
-
-    // STAGE A: MAJOR OUTLIERS (Taste 1-3 or 7-9)
     if (tDist >= 2) {
       msg = (taste < 5) ? "🍋 Analysis: UNDER-EXTRACTED (Sour)" : "🔥 Analysis: OVER-EXTRACTED (Bitter)";
       color = (taste < 5) ? "#4dabff" : "var(--danger)";
-
-      // Major Fix: If Yield is far off, focus on Yield. If Yield is close, focus on Grind/Temp.
-      if (Math.abs(y - targetY) > 2.5) {
-        advice = `<b>Major Fix (Yield):</b> ${getDir(targetY, y, 'Yield')}.`;
-      } else {
-        const gV = (taste < 5) ? "FINER" : "COARSER";
-        const tV = (taste < 5) ? "Increase" : "Reduce";
-        advice = `<b>Major Fix (Extraction):</b> Yield is ballpark, but flavor is unbalanced. <br>1. Grind <b>${gV}</b>. 2. <b>${tV} Water Temp</b> by 2°C.`;
-      }
-
+      if (Math.abs(y - targetY) > 2.5) { advice = `<b>Major Fix (Yield):</b> ${getDir(targetY, y, 'Yield')}.`; }
+      else { advice = `<b>Major Fix (Extraction):</b> Yield is ballpark, but flavor is unbalanced. <br>1. Grind <b>${taste < 5 ? 'FINER' : 'COARSER'}</b>. 2. <b>${taste < 5 ? 'Increase' : 'Reduce'} Water Temp</b> by 2°C.`; }
       if (body <= 3 && taste < 4) advice += `<br><b>Note:</b> Thin texture sharpening acidity. <b>Increase Dose</b> by <b>0.5g</b>.`;
       if (body >= 7 && taste > 6) advice += `<br><b>Note:</b> Heavy texture amplifying bitterness. <b>Decrease Dose</b> by <b>0.5g</b>.`;
     }
-    // STAGE B: NEARLY DIALED (Taste 4 or 6, OR Body 4 or 6)
     else if (taste === 4 || taste === 6 || (taste === 5 && (body === 4 || body === 6))) {
       if (taste === 4 || taste === 6) {
         msg = (taste === 4) ? "🌤️ Analysis: NEARLY DIALED (Bright)" : "🌥️ Analysis: NEARLY DIALED (Heavy)";
@@ -535,20 +534,13 @@ layout: default
         advice = `<b>Micro-Fix:</b> ${getDir(yNudge, y, 'Yield')}. <br><b>Fine-Tune:</b> Use 2°C Water Temp shifts to polish.`;
       } else {
         msg = `✨ Analysis: BALANCED (${body === 4 ? 'Light' : 'Rich'})`;
-        const dV = (body === 4) ? "Increase" : "Decrease";
-        advice = `<b>Nature Note:</b> ${body === 4 ? 'Tea-like clarity' : 'Syrupy weight'}. <br><b>Small Tip:</b> <b>${dV} Dose</b> by <b>0.3g</b>.`;
+        advice = `<b>Nature Note:</b> ${body === 4 ? 'Tea-like clarity' : 'Syrupy weight'}. <br><b>Small Tip:</b> <b>${body === 4 ? 'Increase' : 'Decrease'} Dose</b> by <b>0.3g</b>.`;
       }
     }
-    // STAGE C: THE GOLDEN SHOT (Taste 5 AND Body 5)
-    else if (taste === 5 && body === 5) {
-      msg = "✨ Analysis: THE GOLDEN SHOT";
-      advice = "Flavor and Body are perfectly synchronized. Take a photo of this recipe!";
-    }
-    // STAGE D: BALANCED FLAVOR, EXTREME BODY
+    else if (taste === 5 && body === 5) { msg = "✨ Analysis: THE GOLDEN SHOT"; advice = "Flavor and Body are perfectly synchronized. Take a photo of this recipe!"; }
     else if (taste === 5) {
       msg = (body <= 3) ? "💧 Analysis: TEXTURE TOO THIN" : "🍫 Analysis: TEXTURE TOO MUDDY";
-      const dV = (body <= 3) ? "Increase" : "Decrease";
-      advice = `<b>Primary Fix (Texture):</b> <b>${dV} Dose</b> by <b>0.8g</b>. <br>Flavor is sweet, but the concentration is ${body <= 3 ? 'low' : 'masking nuance'}.`;
+      advice = `<b>Primary Fix (Texture):</b> <b>${body <= 3 ? 'Increase' : 'Decrease'} Dose</b> by <b>0.8g</b>.`;
     }
 
     diagBox.style.borderLeftColor = color; msgEl.innerHTML = msg; msgEl.style.color = color; targetEl.innerHTML = advice + tempWarn;
@@ -569,17 +561,34 @@ layout: default
     updateLogic(); saveToStorage();
   }
 
+  function reuseShot(jsonData) {
+    const data = JSON.parse(jsonData);
+    document.getElementById('roaster-name').value = data.roaster;
+    document.getElementById('beans-name').value = data.beans;
+    document.getElementById('grinder-setting').value = data.grind;
+    setRoast(data.rst, null);
+    sync('dose', data.dose, false);
+    sync('yield', data.yield, false);
+    sync('time', data.time, false);
+    sync('temp', data.temp, false);
+    sync('taste', data.taste, false);
+    sync('body', data.body, false);
+    saveToStorage();
+  }
+
   function addHistoryRow(timeStr, roaster, beans, rst, grind, dose, yield, time, temp, ey, taste, body) {
     const tbody = document.querySelector('#shot-history tbody');
     const row = tbody.insertRow(0);
+    const isGolden = (taste >= 4 && taste <= 6 && body >= 4 && body <= 6);
     const shotData = JSON.stringify({ roaster, beans, rst, grind, dose, yield, time, temp, ey, taste, body }).replace(/"/g, '&quot;');
-    const saveBtn = `<button class="btn-save-row" onclick="exportRecipePNG('${shotData}')">📸</button>`
-    row.innerHTML = `<td>${timeStr}</td><td>${roaster} / ${beans}</td><td>${rst.toUpperCase()}</td><td>${grind}</td><td>${dose}/${yield}</td><td>${temp}°</td><td>${time}s</td><td>${ey}%</td><td>T:${taste} B:${body}</td><td>${saveBtn}<button class="btn-delete-row" onclick="removeRow(this)">×</button></td>`;
+    const saveBtn = isGolden ? `<button class="btn-save-row" onclick="exportRecipePNG('${shotData}')" title="Save PNG">📸</button>` : '';
+    const reuseBtn = `<button class="btn-reuse-row" onclick="reuseShot('${shotData}')" title="Reuse Settings">🔄</button>`;
+    row.innerHTML = `<td>${timeStr}</td><td>${roaster} / ${beans}</td><td>${rst.toUpperCase()}</td><td>${grind}</td><td>${dose}/${yield}</td><td>${temp}°</td><td>${time}s</td><td>${ey}%</td><td>T:${taste} B:${body}</td><td style="display:flex; align-items:center;">${reuseBtn}${saveBtn}<button class="btn-delete-row" onclick="removeRow(this)">×</button></td>`;
     pruneHistory();
   }
 
   function exportRecipePNG(jsonData) {
-    const data = JSON.parse(jsonData), c = document.getElementById('recipe-canvas'), ctx = c.getContext('2d'), imgIn = document.getElementById('recipe-image-input'), now = new Date(), stamp = now.toISOString().slice(0, 10).replace(/-/g, '');
+    const data = JSON.parse(jsonData), c = document.getElementById('recipe-canvas'), ctx = c.getContext('2d'), imgIn = document.getElementById('recipe-image-input'), now = new Date();
     ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, c.width, c.height); ctx.scale(2, 2);
     const draw = (img = null) => {
       ctx.fillStyle = "#2c1e1a"; ctx.fillRect(0, 0, 500, 500);
@@ -592,8 +601,8 @@ layout: default
       ctx.fillStyle = "white"; ctx.font = "bold 32px sans-serif"; ctx.fillText(data.dose + "g", 50, 265); ctx.fillText(data.yield + "g", 180, 265); ctx.fillText(data.taste, 310, 265);
       ctx.font = "bold 16px sans-serif"; ctx.fillStyle = "#999"; ctx.fillText("TIME", 50, 320); ctx.fillText("TEMP", 180, 320); ctx.fillText("BODY", 310, 320);
       ctx.fillStyle = "white"; ctx.font = "bold 32px sans-serif"; ctx.fillText(data.time + "s", 50, 365); ctx.fillText(data.temp + "°", 180, 365); ctx.fillText(data.body, 310, 365);
-      ctx.font = "italic 13px sans-serif"; ctx.fillStyle = "#d4a373"; ctx.fillText("Dialed via Espresso Fixer • " + now.toISOString().slice(0, 10), 50, 450);
-      c.toBlob((b) => { const u = URL.createObjectURL(b); const l = document.createElement('a'); l.href = u; l.download = `${data.roaster.replace(/\s+/g, '_')}_${data.beans.replace(/\s+/g, '_')}_${stamp}.png`; document.body.appendChild(l); l.click(); document.body.removeChild(l); setTimeout(() => URL.revokeObjectURL(u), 100); }, 'image/png');
+      ctx.font = "italic 13px sans-serif"; ctx.fillStyle = "#d4a373"; ctx.fillText("Dialed via Espresso Fixer • " + now.toISOString().slice(0, 10), 50, 440);
+      c.toBlob((b) => { const u = URL.createObjectURL(b); const l = document.createElement('a'); l.href = u; l.download = `${data.roaster}_recipe.png`; document.body.appendChild(l); l.click(); document.body.removeChild(l); setTimeout(() => URL.revokeObjectURL(u), 100); }, 'image/png');
     };
     const bgImg = new Image(); bgImg.onload = () => draw(bgImg); bgImg.onerror = () => draw(null);
     if (imgIn.files && imgIn.files[0]) { const r = new FileReader(); r.onload = (e) => { bgImg.src = e.target.result; }; r.readAsDataURL(imgIn.files[0]); }
@@ -601,11 +610,12 @@ layout: default
   }
 
   function saveToStorage() { if (appLoading) return; const data = { roast, isCalibrated, base, roasterName: document.getElementById('roaster-name').value, beansName: document.getElementById('beans-name').value, grinder: document.getElementById('grinder-setting').value, history: document.querySelector('#shot-history tbody').innerHTML, values: {} }; ids.forEach(id => data.values[id] = document.getElementById('v-' + id).value); localStorage.setItem('espressoLabData', JSON.stringify(data)); }
-  function loadFromStorage() { appLoading = true; const saved = localStorage.getItem('espressoLabData'); if (!saved) { appLoading = false; return; } const data = JSON.parse(saved); roast = data.roast; isCalibrated = data.isCalibrated; base = data.base; document.getElementById('roaster-name').value = data.roasterName || ""; document.getElementById('beans-name').value = data.beansName || ""; document.getElementById('grinder-setting').value = data.grinder || ""; const rb = Array.from(document.querySelectorAll('.roast-btn')).find(b => b.innerText.toLowerCase().replace('-', '') === roast.replace('-', '')); if (rb) setRoast(roast, rb); ids.forEach(id => { const val = data.values[id]; document.getElementById('v-' + id).value = val; document.getElementById('n-' + id).value = val; if (isCalibrated) { const marker = document.getElementById('m-' + id); const slider = document.getElementById('v-' + id); const percent = (base[id] - slider.min) / (slider.max - slider.min) * 100; marker.style.left = getMarkerLeft(percent); marker.style.display = "block"; } }); document.querySelector('#shot-history tbody').innerHTML = data.history; updateLogic(); setTimeout(() => { appLoading = false; }, 100); }
+  function loadFromStorage() { appLoading = true; const saved = localStorage.getItem('espressoLabData'); if (!saved) { appLoading = false; return; } const data = JSON.parse(saved); roast = data.roast; isCalibrated = data.isCalibrated; base = data.base; document.getElementById('roaster-name').value = data.roasterName || ""; document.getElementById('beans-name').value = data.beansName || ""; document.getElementById('grinder-setting').value = data.grinder || ""; setRoast(roast, null); ids.forEach(id => { const val = data.values[id]; document.getElementById('v-' + id).value = val; document.getElementById('n-' + id).value = val; if (isCalibrated) { const marker = document.getElementById('m-' + id); const slider = document.getElementById('v-' + id); const percent = (base[id] - slider.min) / (slider.max - slider.min) * 100; marker.style.left = getMarkerLeft(percent); marker.style.display = "block"; } }); document.querySelector('#shot-history tbody').innerHTML = data.history; updateLogic(); setTimeout(() => { appLoading = false; }, 100); }
   function pruneHistory() { const tbody = document.querySelector('#shot-history tbody'); while (tbody.rows.length > 15) { tbody.deleteRow(tbody.rows.length - 1); } }
   function removeRow(btn) { if (confirm("Remove this shot?")) { btn.closest('tr').remove(); saveToStorage(); } }
   function resetAll() { if (confirm("Wipe all data?")) { localStorage.removeItem('espressoLabData'); window.location.reload(); } }
   function exportCSV() { let rows = [["Date", "Identity", "Roast", "Grind", "Recipe", "EY%", "Sensory"]]; document.querySelectorAll('#shot-history tbody tr').forEach(tr => { let d = Array.from(tr.cells).slice(0, 9).map(td => td.innerText); rows.push(d); }); let csv = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n"); let l = document.createElement("a"); l.href = encodeURI(csv); l.download = "espresso_history.csv"; l.click(); }
+  function toggleHelp() { const g = document.getElementById('taste-guide'); g.style.display = g.style.display === 'none' ? 'block' : 'none'; }
   ids.forEach(id => { document.getElementById('v-' + id).addEventListener('input', (e) => sync(id, e.target.value, true)); document.getElementById('n-' + id).addEventListener('input', (e) => sync(id, e.target.value, false)); });
   window.onload = loadFromStorage;
   {% endraw %}
