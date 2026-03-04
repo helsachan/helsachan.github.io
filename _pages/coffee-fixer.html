@@ -578,9 +578,8 @@ layout: default
   function addHistoryRow(timeStr, roaster, beans, rst, grind, dose, yield, time, temp, ey, taste, body) {
     const tbody = document.querySelector('#shot-history tbody');
     const row = tbody.insertRow(0);
-    const isGolden = (taste >= 4 && taste <= 6 && body >= 4 && body <= 6);
     const shotData = JSON.stringify({ roaster, beans, rst, grind, dose, yield, time, temp, ey, taste, body }).replace(/"/g, '&quot;');
-    const saveBtn = isGolden ? `<button class="btn-save-row" onclick="exportRecipePNG('${shotData}')" title="Save PNG">📸</button>` : '';
+    const saveBtn = `<button class="btn-save-row" onclick="exportRecipePNG('${shotData}')" title="Save PNG">📸</button>`;
     const reuseBtn = `<button class="btn-reuse-row" onclick="reuseShot('${shotData}')" title="Reuse Settings">🔄</button>`;
     row.innerHTML = `<td>${timeStr}</td><td>${roaster} / ${beans}</td><td>${rst.toUpperCase()}</td><td>${grind}</td><td>${dose}/${yield}</td><td>${temp}°</td><td>${time}s</td><td>${ey}%</td><td>T:${taste} B:${body}</td><td style="display:flex; align-items:center;">${reuseBtn}${saveBtn}<button class="btn-delete-row" onclick="removeRow(this)">×</button></td>`;
     pruneHistory();
