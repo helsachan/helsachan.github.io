@@ -486,6 +486,7 @@ layout: default
     else if (roast === 'dark') ey += 1.5;
     return parseFloat(ey.toFixed(1));
   }
+
   function updateLogic() {
     const d = parseFloat(document.getElementById('v-dose').value), y = parseFloat(document.getElementById('v-yield').value), t = parseFloat(document.getElementById('v-time').value), temp = parseFloat(document.getElementById('v-temp').value), taste = parseInt(document.getElementById('v-taste').value), body = parseInt(document.getElementById('v-body').value);
     const diagBox = document.getElementById('diagnosis-container'), msgEl = document.getElementById('diag-msg'), targetEl = document.getElementById('target-text');
@@ -552,6 +553,7 @@ layout: default
 
     diagBox.style.borderLeftColor = color; msgEl.innerHTML = msg; msgEl.style.color = color; targetEl.innerHTML = advice + tempWarn + logicWarn;
   }
+
   function calibrate() {
     isCalibrated = true; const currentEY = calculateEY(), now = new Date();
     const ts = now.toISOString().slice(0, 10) + " " + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
