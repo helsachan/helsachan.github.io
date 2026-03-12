@@ -486,7 +486,6 @@ layout: default
     else if (roast === 'dark') ey += 1.5;
     return parseFloat(ey.toFixed(1));
   }
-
   function updateLogic() {
     const d = parseFloat(document.getElementById('v-dose').value), y = parseFloat(document.getElementById('v-yield').value), t = parseFloat(document.getElementById('v-time').value), temp = parseFloat(document.getElementById('v-temp').value), taste = parseInt(document.getElementById('v-taste').value), body = parseInt(document.getElementById('v-body').value);
     const diagBox = document.getElementById('diagnosis-container'), msgEl = document.getElementById('diag-msg'), targetEl = document.getElementById('target-text');
@@ -507,6 +506,15 @@ layout: default
     else if (roast === 'medium' && temp > 93) tempWarn = `<br><span style="color:#ffcc00">⚠️ <b>TEMP ALERT:</b> Reduce Water Temp to 91-93°C for Medium Roast.</span>`;
     else if (roast === 'light-med' && temp < 92) tempWarn = `<br><span style="color:#ffcc00">⚠️ <b>TEMP ALERT:</b> Increase Water Temp to 93-94°C for Light-Med Roast.</span>`;
     else if (roast === 'light' && temp < 93) tempWarn = `<br><span style="color:#ffcc00">⚠️ <b>TEMP ALERT:</b> Increase Water Temp to 94-96°C for Light Roast.</span>`;
+
+    // NEW: EXTRA SANITY CHECKS
+    let logicWarn = "";
+    const currR = y / d;
+    if (currR < 1.4) logicWarn += `<br><span style="color:#ffcc00">⚠️ <b>RATIO ALERT:</b> Increase Yield. Current ratio is very restricted (potential saltiness).</span>`;
+    if (currR > 3.0) logicWarn += `<br><span style="color:#ffcc00">⚠️ <b>RATIO ALERT:</b> Reduce Yield. Current ratio is very long (potential thinness).</span>`;
+
+    if ((roast === 'light' || roast === 'light-med') && t < 26) logicWarn += `<br><span style="color:#ffcc00">⚠️ <b>TIME ALERT:</b> Increase Time. Light roasts require longer contact for sweetness.</span>`;
+    if ((roast === 'dark' || roast === 'med-dark') && t > 32) logicWarn += `<br><span style="color:#ffcc00">⚠️ <b>TIME ALERT:</b> Reduce Time. Dark roasts can over-extract quickly.</span>`;
 
     if (!isCalibrated) { msgEl.innerHTML = "Awaiting Baseline..."; return; }
 
@@ -542,9 +550,8 @@ layout: default
       advice = `<b>Primary Fix (Texture):</b> <b>${body <= 3 ? 'Increase' : 'Decrease'} Dose</b> by <b>0.8g</b>.`;
     }
 
-    diagBox.style.borderLeftColor = color; msgEl.innerHTML = msg; msgEl.style.color = color; targetEl.innerHTML = advice + tempWarn;
+    diagBox.style.borderLeftColor = color; msgEl.innerHTML = msg; msgEl.style.color = color; targetEl.innerHTML = advice + tempWarn + logicWarn;
   }
-
   function calibrate() {
     isCalibrated = true; const currentEY = calculateEY(), now = new Date();
     const ts = now.toISOString().slice(0, 10) + " " + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
