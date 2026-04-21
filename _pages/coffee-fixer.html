@@ -577,14 +577,12 @@ layout: default
     document.getElementById('grinder-setting').value = data.grind;
     setRoast(data.rst, null);
 
-    // Changing 'false' to 'true' in the third argument of sync() 
-    // ensures both sliders and numerical inputs are updated.
-    sync('dose', data.dose, true);
-    sync('yield', data.yield, true);
-    sync('time', data.time, true);
-    sync('temp', data.temp, true);
-    sync('taste', data.taste, true);
-    sync('body', data.body, true);
+    // Call sync twice: once to update the slider (false) 
+    // and once to update the numerical reading (true).
+    ids.forEach(id => {
+      sync(id, data[id], false);
+      sync(id, data[id], true);
+    });
 
     saveToStorage();
   }
