@@ -576,12 +576,16 @@ layout: default
     document.getElementById('beans-name').value = data.beans;
     document.getElementById('grinder-setting').value = data.grind;
     setRoast(data.rst, null);
-    sync('dose', data.dose, false);
-    sync('yield', data.yield, false);
-    sync('time', data.time, false);
-    sync('temp', data.temp, false);
-    sync('taste', data.taste, false);
-    sync('body', data.body, false);
+
+    // Changing 'false' to 'true' in the third argument of sync() 
+    // ensures both sliders and numerical inputs are updated.
+    sync('dose', data.dose, true);
+    sync('yield', data.yield, true);
+    sync('time', data.time, true);
+    sync('temp', data.temp, true);
+    sync('taste', data.taste, true);
+    sync('body', data.body, true);
+
     saveToStorage();
   }
 
